@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace NominaSystem.Domain.Entities
 {
-    internal class DescuentoLegal
+    public class DescuentoLegal
     {
         public int Id { get; set; }
-        public string NombreDescuento { get; set; }
+        public required string NombreDescuento { get; set; }
         public decimal Porcentaje { get; set; }
         public string? Descripcion { get; set; }
     }

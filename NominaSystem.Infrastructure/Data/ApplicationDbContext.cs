@@ -50,7 +50,7 @@ namespace NominaSystem.Infrastructure.Data
                 .IsUnique();
 
             modelBuilder.Entity<Usuario>()
-                .HasIndex(u => u.Usuario)
+                .HasIndex(u => u.UsuarioNombre)
                 .IsUnique();
 
             modelBuilder.Entity<ConfiguracionExpediente>()

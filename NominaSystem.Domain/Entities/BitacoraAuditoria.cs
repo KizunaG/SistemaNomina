@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace NominaSystem.Domain.Entities
 {
-    internal class BitacoraAuditoria
+    public class BitacoraAuditoria
     {
         public int Id { get; set; }
         public int ID_Usuario { get; set; }
-        public string Accion { get; set; }
-        public string TablaAfectada { get; set; }
+        public required string Accion { get; set; }
+        public string? TablaAfectada { get; set; }
         public DateTime FechaHora { get; set; } = DateTime.Now;
-        public string Detalles { get; set; }
+        public string? Detalles { get; set; }
     }
 }

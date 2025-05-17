@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NominaSystem.Domain.Entities
 {
-    internal class Nomina
+    public class Nomina
     {
         public int Id { get; set; }
         public int ID_Empleado { get; set; }

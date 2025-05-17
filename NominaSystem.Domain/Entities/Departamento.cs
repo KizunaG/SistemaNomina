@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace NominaSystem.Domain.Entities
 {
-    internal class Departamento
+    public class Departamento
     {
         public int Id { get; set; }
-        public string NombreDepartamento { get; set; }
+        public required string NombreDepartamento { get; set; }
     }
 }

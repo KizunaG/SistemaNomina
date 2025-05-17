@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace NominaSystem.Domain.Entities
 {
-    internal class Rol
+    public class Rol
     {
         public int Id { get; set; }
-        public string NombreRol { get; set; }
+        public required string NombreRol { get; set; }
     }
 }

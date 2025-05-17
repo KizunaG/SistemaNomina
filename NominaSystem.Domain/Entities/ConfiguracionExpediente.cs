@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace NominaSystem.Domain.Entities
 {
-    internal class ConfiguracionExpediente
+    public class ConfiguracionExpediente
     {
         public int Id { get; set; }
-        public string TipoDocumento { get; set; }
+        public string? TipoDocumento { get; set; }
         public bool Obligatorio { get; set; } = true;
     }
 }

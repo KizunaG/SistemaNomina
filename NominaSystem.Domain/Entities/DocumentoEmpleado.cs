@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace NominaSystem.Domain.Entities
 {
-    internal class DocumentoEmpleado
+    public class DocumentoEmpleado
     {
         public int Id { get; set; }
         public int ID_Empleado { get; set; }
-        public string TipoDocumento { get; set; } // Ej: DPI, Contrato, etc.
-        public string RutaArchivo { get; set; }
+        public required string TipoDocumento { get; set; } // Ej: DPI, Contrato, etc.
+        public  required string RutaArchivo { get; set; }
         public DateTime? FechaEntrega { get; set; }
     }
 }
