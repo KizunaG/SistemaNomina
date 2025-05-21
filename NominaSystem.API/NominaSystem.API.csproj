@@ -16,6 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NominaSystem.Application\NominaSystem.Application.csproj" />
+    <ProjectReference Include="..\NominaSystem.Domain\NominaSystem.Domain.csproj" />
     <ProjectReference Include="..\NominaSystem.Infrastructure\NominaSystem.Infrastructure.csproj" />
   </ItemGroup>
 

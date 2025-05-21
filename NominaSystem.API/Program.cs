@@ -1,23 +1,25 @@
 using Microsoft.EntityFrameworkCore;
 using NominaSystem.Infrastructure.Data;
-
-
+using NominaSystem.Application.Interfaces;
+using NominaSystem.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Conexión a la base de datos
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Registro del servicio de empleados
+builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configuración del entorno
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -25,9 +27,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
+
