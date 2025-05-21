@@ -25,7 +25,7 @@ namespace NominaSystem.Infrastructure.Data
         // INFORMACIÓN ACADÉMICA Y DOCUMENTOS
         public DbSet<InformacionAcademica> InformacionAcademica { get; set; }
         public DbSet<DocumentoEmpleado> DocumentosEmpleado { get; set; }
-        public DbSet<ConfiguracionExpediente> ConfiguracionExpedientes { get; set; }
+        public DbSet<ConfiguracionExpediente> ConfiguracionExpediente { get; set; }
         public DbSet<ExpedienteEmpleado> ExpedientesEmpleado { get; set; }
 
         // NÓMINA Y AJUSTES

@@ -13,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
 
+builder.Services.AddScoped<IExpedienteService, ExpedienteService>(); //servicio de expediente
+
 
 // Add services to the container.
 
