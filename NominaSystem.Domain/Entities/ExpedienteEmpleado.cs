@@ -8,8 +8,10 @@ namespace NominaSystem.Domain.Entities
 {
     public class ExpedienteEmpleado
     {
+        public int Id { get; set; } // ✅ Agregas esto como clave primaria
+
         public int ID_Empleado { get; set; }
-        public required string EstadoExpediente { get; set; } // Completo, Incompleto, En Proceso
+        public string EstadoExpediente { get; set; } = "";
         public DateTime? UltimaValidacion { get; set; }
     }
 }
