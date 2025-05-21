@@ -1,9 +1,15 @@
 using Microsoft.EntityFrameworkCore;
+using NominaSystem.Application.Interfaces;
 using NominaSystem.Infrastructure.Data;
+using NominaSystem.Infrastructure.Services;
+
 
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
+
 
 // Add services to the container.
 
