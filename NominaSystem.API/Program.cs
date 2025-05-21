@@ -21,6 +21,8 @@ builder.Services.AddScoped<ICargoService, CargoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<IInformacionAcademicaService, InformacionAcademicaService>();
+builder.Services.AddScoped<IConfiguracionExpedienteService, ConfiguracionExpedienteService>();
+
 
 
 
