@@ -1,11 +1,12 @@
-﻿namespace NominaSystem.API.Controllers
-{
-    using global::NominaSystem.Application.Interfaces;
-    using global::NominaSystem.Domain.Entities;
-    using Microsoft.AspNetCore.Mvc;
+﻿
+using global::NominaSystem.Application.Interfaces;
+using global::NominaSystem.Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
-    namespace NominaSystem.API.Controllers
+namespace NominaSystem.API.Controllers
     {
+        [Authorize]
         [ApiController]
         [Route("api/[controller]")]
         public class EmpleadoController : ControllerBase
@@ -57,5 +58,3 @@
             }
         }
     }
-
-}

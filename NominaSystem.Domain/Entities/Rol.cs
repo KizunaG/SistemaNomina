@@ -10,5 +10,7 @@ namespace NominaSystem.Domain.Entities
     {
         public int Id { get; set; }
         public required string NombreRol { get; set; }
+
+        public ICollection<Usuario> Usuario { get; set; }
     }
 }
