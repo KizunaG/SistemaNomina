@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NominaSystem.Application.Interfaces;
 using NominaSystem.Domain.Entities;
+using BCrypt.Net;
+
 
 namespace NominaSystem.API.Controllers;
 
@@ -29,9 +31,13 @@ public class UsuariosController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Usuario usuario)
     {
+        // Cifrar contraseña antes de guardar
+        usuario.Contrasena = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasena);
+
         await _service.AddAsync(usuario);
         return CreatedAtAction(nameof(GetById), new { id = usuario.Id }, usuario);
     }
+
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] Usuario usuario)
