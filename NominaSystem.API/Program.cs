@@ -25,6 +25,8 @@ builder.Services.AddScoped<IConfiguracionExpedienteService, ConfiguracionExpedie
 builder.Services.AddScoped<IDocumentoEmpleadoService, DocumentoEmpleadoService>();
 builder.Services.AddScoped<IExpedienteEmpleadoService, ExpedienteEmpleadoService>();
 builder.Services.AddScoped<INominaService, NominaService>();
+builder.Services.AddScoped<IAjusteNominaService, AjusteNominaService>();
+
 
 
 
