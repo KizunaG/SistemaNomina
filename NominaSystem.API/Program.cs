@@ -24,6 +24,8 @@ builder.Services.AddScoped<IInformacionAcademicaService, InformacionAcademicaSer
 builder.Services.AddScoped<IConfiguracionExpedienteService, ConfiguracionExpedienteService>();
 builder.Services.AddScoped<IDocumentoEmpleadoService, DocumentoEmpleadoService>();
 builder.Services.AddScoped<IExpedienteEmpleadoService, ExpedienteEmpleadoService>();
+builder.Services.AddScoped<INominaService, NominaService>();
+
 
 
 
