@@ -1,0 +1,17 @@
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+<div class="page">
+    @if (!Navigation.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase))
+    {
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    }
+
+    <main>
+        <div class="content px-4">
+            @Body
+        </div>
+    </main>
+</div>
