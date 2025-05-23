@@ -9,4 +9,6 @@ public interface INominaService
     Task AddAsync(Nomina nomina);
     Task UpdateAsync(Nomina nomina);
     Task DeleteAsync(int id);
+    Task<Nomina> ProcesarNominaAsync(Nomina nomina);
+
 }

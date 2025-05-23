@@ -49,4 +49,11 @@ public class NominaController : ControllerBase
         await _service.DeleteAsync(id);
         return NoContent();
     }
+    [HttpPost("procesar")]
+    public async Task<IActionResult> ProcesarNomina([FromBody] Nomina nomina)
+    {
+        var resultado = await _service.ProcesarNominaAsync(nomina);
+        return Ok(resultado);
+    }
+
 }
