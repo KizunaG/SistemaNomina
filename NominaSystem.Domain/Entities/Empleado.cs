@@ -16,6 +16,8 @@ public class Empleado
     public required string DPI { get; set; }
     public required string EstadoLaboral { get; set; }
     public DateTime? FechaIngreso { get; set; }
+    public bool ExpedienteCompleto { get; set; }
+
 
     public int? ID_Cargo { get; set; }
     public int? ID_Departamento { get; set; }
