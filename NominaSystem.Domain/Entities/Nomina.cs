@@ -18,5 +18,6 @@ namespace NominaSystem.Domain.Entities
         public decimal Descuentos { get; set; }
         public decimal TotalPago { get; set; }
         public DateTime? FechaPago { get; set; }
+        public Empleado? Empleado { get; set; }
     }
 }

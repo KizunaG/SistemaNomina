@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace NominaSystem.Domain.Entities;
 
@@ -16,6 +18,7 @@ public class Empleado
     public required string DPI { get; set; }
     public required string EstadoLaboral { get; set; }
     public DateTime? FechaIngreso { get; set; }
+    [NotMapped]
     public bool ExpedienteCompleto { get; set; }
 
 
