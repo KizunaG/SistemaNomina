@@ -52,5 +52,24 @@ namespace NominaSystem.Infrastructure.Services
             await _context.SaveChangesAsync();
             return nomina;
         }
+        public async Task<bool> ValidarAntesProcesarNominaAsync(int empleadoId)
+        {
+            // Verifica que el expediente esté completo antes de procesar la nómina
+            var configuraciones = await _context.ConfiguracionExpedientes
+                .Where(c => c.Obligatorio)
+                .Select(c => c.TipoDocumento)
+                .ToListAsync();
+
+            var entregados = await _context.DocumentosEmpleado
+                .Where(d => d.ID_Empleado == empleadoId)
+                .Select(d => d.TipoDocumento)
+                .ToListAsync();
+
+            return configuraciones
+    .Where(doc => doc != null)
+    .All(doc => entregados.Where(e => e != null).Contains(doc));
+
+        }
+
     }
 }

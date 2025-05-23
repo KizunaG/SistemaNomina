@@ -10,5 +10,7 @@ public interface INominaService
     Task UpdateAsync(Nomina nomina);
     Task DeleteAsync(int id);
     Task<Nomina> ProcesarNominaAsync(Nomina nomina);
+    Task<bool> ValidarAntesProcesarNominaAsync(int empleadoId);
+
 
 }

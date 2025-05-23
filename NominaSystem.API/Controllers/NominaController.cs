@@ -55,5 +55,11 @@ public class NominaController : ControllerBase
         var resultado = await _service.ProcesarNominaAsync(nomina);
         return Ok(resultado);
     }
+    [HttpGet("validar-procesamiento/{empleadoId}")]
+    public async Task<IActionResult> ValidarAntesDeProcesar(int empleadoId)
+    {
+        bool valido = await _service.ValidarAntesProcesarNominaAsync(empleadoId);
+        return Ok(new { empleadoId, puedeProcesar = valido });
+    }
 
 }
