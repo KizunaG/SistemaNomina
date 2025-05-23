@@ -26,6 +26,13 @@ public class ExpedienteEmpleadoController : ControllerBase
         return expediente == null ? NotFound() : Ok(expediente);
     }
 
+    [HttpGet("validar/{empleadoId}")]
+    public async Task<IActionResult> ValidarExpediente(int empleadoId)
+    {
+        var esValido = await _service.ValidarExpedienteCompleto(empleadoId);
+        return Ok(new { empleadoId, expedienteCompleto = esValido });
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ExpedienteEmpleado expediente)
     {
