@@ -1,0 +1,56 @@
+﻿@page "/login"
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using NominaSystem.UI.Models
+@using NominaSystem.UI.Services.Interfaces
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Iniciar sesión</h3>
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Correo</label>
+        <InputText class="form-control" @bind-Value="loginModel.Correo" />
+    </div>
+    <div class="mb-3">
+        <label>Contraseña</label>
+        <InputText type="password" class="form-control" @bind-Value="loginModel.Contrasena" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Ingresar</button>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger mt-3">@error</div>
+    }
+</EditForm>
+
+@code {
+    private LoginRequest loginModel = new();
+    private string? error;
+
+    private async Task HandleLogin()
+    {
+        var token = await AuthService.LoginAsync(loginModel.Correo, loginModel.Contrasena);
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            error = null;
+
+            // Guardar el token en localStorage
+            await JS.InvokeVoidAsync("localStorage.setItem", "token", token);
+
+            Navigation.NavigateTo("/empleados");
+        }
+        else
+        {
+            error = "Credenciales inválidas";
+        }
+    }
+}
+
