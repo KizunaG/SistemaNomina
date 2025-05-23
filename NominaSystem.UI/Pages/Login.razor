@@ -1,15 +1,14 @@
 ﻿@page "/login"
 @using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using NominaSystem.UI.Models
 @using NominaSystem.UI.Services.Interfaces
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
+@inject ProtectedLocalStorage LocalStorage
 
 <h3>Iniciar sesión</h3>
-
-<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+<EditForm Model="@loginModel" OnSubmit="HandleLogin">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -36,21 +35,31 @@
 
     private async Task HandleLogin()
     {
-        var token = await AuthService.LoginAsync(loginModel.Correo, loginModel.Contrasena);
+        error = "🔍 Entró a HandleLogin";
 
-        if (!string.IsNullOrEmpty(token))
+        try
         {
-            error = null;
+            var token = await AuthService.LoginAsync(loginModel.Correo, loginModel.Contrasena);
 
-            // Guardar el token en localStorage
-            await JS.InvokeVoidAsync("localStorage.setItem", "token", token);
+            if (!string.IsNullOrEmpty(token))
+            {
+                error = "✅ Login correcto. Guardando token...";
 
-            Navigation.NavigateTo("/empleados");
+                await LocalStorage.SetAsync("authToken", token);
+
+                error = "✅ Token guardado. Redirigiendo...";
+                Navigation.NavigateTo("/empleados", true);
+            }
+            else
+            {
+                error = "❌ Credenciales inválidas o no se obtuvo token";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            error = "Credenciales inválidas";
+            error = $"❌ Excepción: {ex.Message}";
         }
     }
 }
+
 

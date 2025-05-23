@@ -21,7 +21,7 @@ public class AuthService : IAuthService
             Contrasena = contrasena
         };
 
-        var response = await _http.PostAsJsonAsync("api/Auth/login", request);
+        var response = await _http.PostAsJsonAsync("https://localhost:7122/api/Auth/login", request);
 
         if (response.IsSuccessStatusCode)
         {
