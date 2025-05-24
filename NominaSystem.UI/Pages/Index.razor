@@ -1,0 +1,15 @@
+@page "/"
+@inject NavigationManager Navigation
+
+@code {
+    private bool _firstRender = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_firstRender)
+        {
+            _firstRender = false;
+            Navigation.NavigateTo("/login", true);
+        }
+    }
+}
