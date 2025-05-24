@@ -156,6 +156,71 @@ namespace NominaSystem.Infrastructure.Services
 
             return pdf;
         }
+        public async Task<byte[]> GenerarReporteDescuentosAsync(ReporteDescuentosRequest request)
+        {
+            var descuentos = await _context.DetallesDescuentoNomina
+                .Include(d => d.Nomina)
+                .ThenInclude(n => n.Empleado)
+                .Include(d => d.Descuento)
+                .Where(d => d.Nomina.FechaPago >= request.FechaInicio && d.Nomina.FechaPago <= request.FechaFin)
+                .ToListAsync();
+
+            var pdf = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(30);
+                    page.Size(PageSizes.A4);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(12));
+
+                    page.Header().Text($"Reporte de Descuentos Aplicados ({request.FechaInicio:dd/MM/yyyy} - {request.FechaFin:dd/MM/yyyy})")
+                                 .FontSize(16).SemiBold().AlignCenter().FontColor(Colors.Red.Medium);
+
+                    page.Content().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.ConstantColumn(30);  // #
+                            columns.RelativeColumn();    // Empleado
+                            columns.RelativeColumn();    // Descuento
+                            columns.RelativeColumn();    // Fecha
+                            columns.RelativeColumn();    // Monto
+                        });
+
+                        table.Header(header =>
+                        {
+                            header.Cell().Element(CellStyle).Text("#");
+                            header.Cell().Element(CellStyle).Text("Empleado");
+                            header.Cell().Element(CellStyle).Text("Tipo de Descuento");
+                            header.Cell().Element(CellStyle).Text("Fecha de Pago");
+                            header.Cell().Element(CellStyle).Text("Monto");
+
+                            static IContainer CellStyle(IContainer container) =>
+                                container.DefaultTextStyle(x => x.SemiBold()).Padding(5).Background(Colors.Grey.Lighten2).BorderBottom(1);
+                        });
+
+                        int i = 1;
+                        foreach (var d in descuentos)
+                        {
+                            table.Cell().Element(Cell).Text(i++.ToString());
+                            table.Cell().Element(Cell).Text(d.Nomina?.Empleado?.Nombre ?? "Desconocido");
+                            table.Cell().Element(Cell).Text(d.Descuento?.NombreDescuento ?? "N/A");
+                            table.Cell().Element(Cell).Text(d.Nomina?.FechaPago?.ToString("dd/MM/yyyy") ?? "");
+                            table.Cell().Element(Cell).Text(d.Monto.ToString("C", CultureInfo.CurrentCulture));
+                        }
+
+                        static IContainer Cell(IContainer container) =>
+                            container.Padding(5).BorderBottom(1).BorderColor(Colors.Grey.Lighten2);
+                    });
+
+                    page.Footer().AlignCenter().Text($"Generado el {DateTime.Now:dd/MM/yyyy HH:mm}");
+                });
+            }).GeneratePdf();
+
+            return pdf;
+        }
+
 
     }
 }
