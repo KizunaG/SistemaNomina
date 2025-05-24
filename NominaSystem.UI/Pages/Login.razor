@@ -1,6 +1,6 @@
 ﻿@page "/login"
 @using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using NominaSystem.UI.Models
 @using NominaSystem.UI.Services.Interfaces
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
@@ -10,8 +10,7 @@
 @inject ProtectedLocalStorage LocalStorage
 
 <h3>Iniciar sesión</h3>
-
-<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+<EditForm Model="@loginModel" OnSubmit="HandleLogin">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -58,10 +57,11 @@
         }
         catch (Exception ex)
         {
+
             error = "Error inesperado: " + ex.Message;
             Console.WriteLine("❌ Excepción: " + ex.ToString());
         }
     }
-
 }
+
 

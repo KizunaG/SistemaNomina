@@ -25,7 +25,6 @@ builder.Services.AddScoped<ProtectedLocalStorage>();
 // Componentes interactivos
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
 // Mostrar errores de circuito
 builder.Services.Configure<CircuitOptions>(options =>
 {
