@@ -92,5 +92,70 @@ namespace NominaSystem.Infrastructure.Services
 
             return pdf;
         }
+        public async Task<byte[]> GenerarReporteEmpleadosEstadoAsync(ReporteEmpleadosEstadoRequest request)
+        {
+            var empleados = await _context.Empleados
+                .Where(e => e.EstadoLaboral == request.Estado)
+                .ToListAsync();
+
+            var pdf = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(30);
+                    page.Size(PageSizes.A4);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(12));
+
+                    page.Header().Text($"Reporte de Empleados ({request.Estado})")
+                                 .FontSize(16).SemiBold().AlignCenter().FontColor(Colors.Blue.Medium);
+
+                    page.Content().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.ConstantColumn(30);
+                            columns.RelativeColumn(2); // Nombre
+                            columns.RelativeColumn();  // DPI
+                            columns.RelativeColumn();  // Dirección
+                            columns.RelativeColumn();  // Teléfono
+                            columns.RelativeColumn();  // FechaIngreso
+                        });
+
+                        table.Header(header =>
+                        {
+                            header.Cell().Element(CellStyle).Text("#");
+                            header.Cell().Element(CellStyle).Text("Nombre");
+                            header.Cell().Element(CellStyle).Text("DPI");
+                            header.Cell().Element(CellStyle).Text("Dirección");
+                            header.Cell().Element(CellStyle).Text("Teléfono");
+                            header.Cell().Element(CellStyle).Text("Fecha de Ingreso");
+
+                            static IContainer CellStyle(IContainer container) =>
+                                container.DefaultTextStyle(x => x.SemiBold()).Padding(5).Background(Colors.Grey.Lighten2).BorderBottom(1);
+                        });
+
+                        int i = 1;
+                        foreach (var emp in empleados)
+                        {
+                            table.Cell().Element(Cell).Text(i++.ToString());
+                            table.Cell().Element(Cell).Text(emp.Nombre);
+                            table.Cell().Element(Cell).Text(emp.DPI);
+                            table.Cell().Element(Cell).Text(emp.Direccion);
+                            table.Cell().Element(Cell).Text(emp.Telefono);
+                            table.Cell().Element(Cell).Text(emp.FechaIngreso?.ToString("dd/MM/yyyy"));
+                        }
+
+                        static IContainer Cell(IContainer container) =>
+                            container.Padding(5).BorderBottom(1).BorderColor(Colors.Grey.Lighten2);
+                    });
+
+                    page.Footer().AlignCenter().Text($"Generado el {DateTime.Now:dd/MM/yyyy HH:mm}");
+                });
+            }).GeneratePdf();
+
+            return pdf;
+        }
+
     }
 }

@@ -25,5 +25,13 @@ namespace NominaSystem.API.Controllers
 
             return File(pdfBytes, "application/pdf", nombreArchivo);
         }
+
+        [HttpPost("empleados-estado")]
+        public async Task<IActionResult> GenerarReporteEmpleadosEstado([FromBody] ReporteEmpleadosEstadoRequest request)
+        {
+            var pdfBytes = await _reporteService.GenerarReporteEmpleadosEstadoAsync(request);
+            return File(pdfBytes, "application/pdf", $"reporte_empleados_{request.Estado}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+        }
+
     }
 }

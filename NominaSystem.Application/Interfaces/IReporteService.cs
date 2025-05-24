@@ -9,6 +9,8 @@ namespace NominaSystem.Application.Interfaces
     public interface IReporteService
     {
         Task<byte[]> GenerarReporteNominaPorPeriodoAsync(ReporteNominaPeriodoRequest request);
+        Task<byte[]> GenerarReporteEmpleadosEstadoAsync(ReporteEmpleadosEstadoRequest request);
+
     }
 }
 
