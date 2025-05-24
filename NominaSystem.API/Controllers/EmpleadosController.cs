@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NominaSystem.Application.Interfaces;
 using NominaSystem.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace NominaSystem.API.Controllers;
-
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class EmpleadosController : ControllerBase

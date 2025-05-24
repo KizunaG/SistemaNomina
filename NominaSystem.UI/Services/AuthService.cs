@@ -13,11 +13,11 @@ public class AuthService : IAuthService
         _http = http;
     }
 
-    public async Task<string?> LoginAsync(string correo, string contrasena)
+    public async Task<string?> LoginAsync(string usuarioNombre, string contrasena)
     {
         var request = new LoginRequest
         {
-            Correo = correo,
+            UsuarioNombre = usuarioNombre,
             Contrasena = contrasena
         };
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NominaSystem.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using NominaSystem.Infrastructure.Data;
 namespace NominaSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250523015739_AddExpedienteCompletoField")]
+    partial class AddExpedienteCompletoField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,9 +175,6 @@ namespace NominaSystem.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("DescuentoId")
-                        .HasColumnType("int");
-
                     b.Property<int>("ID_Descuento")
                         .HasColumnType("int");
 
@@ -184,14 +184,7 @@ namespace NominaSystem.Infrastructure.Migrations
                     b.Property<decimal>("Monto")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("NominaId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("DescuentoId");
-
-                    b.HasIndex("NominaId");
 
                     b.ToTable("DetallesDescuentoNomina");
                 });
@@ -355,8 +348,6 @@ namespace NominaSystem.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ID_Empleado");
-
                     b.ToTable("Nominas");
                 });
 
@@ -405,36 +396,6 @@ namespace NominaSystem.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Usuarios");
-                });
-
-            modelBuilder.Entity("NominaSystem.Domain.Entities.DetalleDescuentoNomina", b =>
-                {
-                    b.HasOne("NominaSystem.Domain.Entities.DescuentoLegal", "Descuento")
-                        .WithMany()
-                        .HasForeignKey("DescuentoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("NominaSystem.Domain.Entities.Nomina", "Nomina")
-                        .WithMany()
-                        .HasForeignKey("NominaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Descuento");
-
-                    b.Navigation("Nomina");
-                });
-
-            modelBuilder.Entity("NominaSystem.Domain.Entities.Nomina", b =>
-                {
-                    b.HasOne("NominaSystem.Domain.Entities.Empleado", "Empleado")
-                        .WithMany()
-                        .HasForeignKey("ID_Empleado")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Empleado");
                 });
 #pragma warning restore 612, 618
         }

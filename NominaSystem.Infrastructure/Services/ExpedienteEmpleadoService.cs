@@ -16,6 +16,22 @@ public class ExpedienteEmpleadoService : IExpedienteEmpleadoService
 
     public async Task<List<ExpedienteEmpleado>> GetAllAsync() =>
         await _context.ExpedientesEmpleado.ToListAsync();
+    public async Task<bool> ValidarExpedienteCompleto(int empleadoId)
+    {
+        var documentosRequeridos = await _context.ConfiguracionExpedientes
+            .Where(c => c.Obligatorio && c.TipoDocumento != null)
+            .Select(c => c.TipoDocumento!)
+            .ToListAsync();
+
+        var documentosEntregados = await _context.DocumentosEmpleado
+            .Where(d => d.ID_Empleado == empleadoId && d.TipoDocumento != null)
+            .Select(d => d.TipoDocumento!)
+            .ToListAsync();
+
+        return documentosRequeridos.All(dr => documentosEntregados.Contains(dr));
+    }
+
+
 
     public async Task<ExpedienteEmpleado?> GetByIdAsync(int id) =>
         await _context.ExpedientesEmpleado.FindAsync(id);
