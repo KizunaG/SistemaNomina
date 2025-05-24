@@ -3,9 +3,11 @@
 @using Microsoft.JSInterop
 @using NominaSystem.UI.Models
 @using NominaSystem.UI.Services.Interfaces
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
+@inject ProtectedLocalStorage LocalStorage
 
 <h3>Iniciar sesión</h3>
 
@@ -14,8 +16,8 @@
     <ValidationSummary />
 
     <div class="mb-3">
-        <label>Correo</label>
-        <InputText class="form-control" @bind-Value="loginModel.Correo" />
+        <label>Usuario</label>
+        <InputText class="form-control" @bind-Value="loginModel.UsuarioNombre" />
     </div>
     <div class="mb-3">
         <label>Contraseña</label>
@@ -36,21 +38,30 @@
 
     private async Task HandleLogin()
     {
-        var token = await AuthService.LoginAsync(loginModel.Correo, loginModel.Contrasena);
-
-        if (!string.IsNullOrEmpty(token))
+        try
         {
-            error = null;
+            var token = await AuthService.LoginAsync(loginModel.UsuarioNombre, loginModel.Contrasena);
 
-            // Guardar el token en localStorage
-            await JS.InvokeVoidAsync("localStorage.setItem", "token", token);
+            if (!string.IsNullOrEmpty(token))
+            {
+                error = null;
 
-            Navigation.NavigateTo("/empleados");
+                // Guardar el token de forma segura
+                await LocalStorage.SetAsync("authToken", token);
+
+                Navigation.NavigateTo("/empleados");
+            }
+            else
+            {
+                error = "Credenciales inválidas";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            error = "Credenciales inválidas";
+            error = "Error inesperado: " + ex.Message;
+            Console.WriteLine("❌ Excepción: " + ex.ToString());
         }
     }
+
 }
 
