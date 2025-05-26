@@ -1,0 +1,129 @@
+﻿@page "/empleados/editar/{id:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+
+<h3>Editar Empleado</h3>
+
+@if (empleado == null)
+{
+    <p><em>Cargando datos del empleado...</em></p>
+}
+else
+{
+    <EditForm Model="empleado" OnValidSubmit="ActualizarEmpleado">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <label>Nombre:</label>
+            <InputText class="form-control" @bind-Value="empleado.Nombre" />
+            <ValidationMessage For="@(() => empleado.Nombre)" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label>DPI:</label>
+            <InputText class="form-control" @bind-Value="empleado.Dpi" />
+            <ValidationMessage For="@(() => empleado.Dpi)" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label>Teléfono:</label>
+            <InputText class="form-control" @bind-Value="empleado.Telefono" />
+            <ValidationMessage For="@(() => empleado.Telefono)" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label>Estado Laboral:</label>
+            <InputSelect class="form-control" @bind-Value="empleado.EstadoLaboral">
+                <option value="">-- Seleccionar estado --</option>
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+            </InputSelect>
+            <ValidationMessage For="@(() => empleado.EstadoLaboral)" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label>Dirección:</label>
+            <InputText class="form-control" @bind-Value="empleado.Direccion" />
+            <ValidationMessage For="@(() => empleado.Direccion)" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label>Fecha de Ingreso:</label>
+            <InputDate class="form-control" @bind-Value="empleado.FechaIngreso" />
+            <ValidationMessage For="@(() => empleado.FechaIngreso)" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label>ID Cargo:</label>
+            <InputNumber class="form-control" @bind-Value="empleado.ID_Cargo" />
+            <ValidationMessage For="@(() => empleado.ID_Cargo)" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label>ID Departamento:</label>
+            <InputNumber class="form-control" @bind-Value="empleado.ID_Departamento" />
+            <ValidationMessage For="@(() => empleado.ID_Departamento)" class="text-danger" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Actualizar</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private Empleado? empleado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        empleado = await Http.GetFromJsonAsync<Empleado>($"api/Empleados/{id}");
+    }
+
+    private async Task ActualizarEmpleado()
+    {
+        await Http.PutAsJsonAsync($"api/Empleados/{empleado!.Id}", empleado);
+        Navigation.NavigateTo("/empleados");
+    }
+
+    private void Cancelar()
+    {
+        Navigation.NavigateTo("/empleados");
+    }
+
+    public class Empleado
+    {
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        [StringLength(100, ErrorMessage = "El nombre no puede exceder 100 caracteres")]
+        public string Nombre { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El DPI es obligatorio")]
+        [RegularExpression(@"^\d{13}$", ErrorMessage = "El DPI debe tener 13 dígitos")]
+        public string Dpi { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El teléfono es obligatorio")]
+        [Phone(ErrorMessage = "Debe ser un número de teléfono válido")]
+        public string Telefono { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Debe seleccionar un estado laboral")]
+        public string EstadoLaboral { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La dirección es obligatoria")]
+        public string Direccion { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Debe seleccionar una fecha válida")]
+        public DateTime FechaIngreso { get; set; } = DateTime.Today;
+
+        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un cargo válido")]
+        public int ID_Cargo { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un departamento válido")]
+        public int ID_Departamento { get; set; }
+    }
+}
