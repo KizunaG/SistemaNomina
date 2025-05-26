@@ -11,16 +11,20 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 // HttpClient apuntando al backend correcto (puerto 7122 del WebAPI)
-builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+builder.Services.AddScoped(sp =>
 {
-    client.BaseAddress = new Uri("https://localhost:7122/");
+    var client = new HttpClient
+    {
+        BaseAddress = new Uri("https://localhost:7122/") //backend API
+    };
+    return client;
 });
 
+// Servicios inyectables
 builder.Services.AddBlazoredLocalStorage();
 
+builder.Services.AddScoped<IAuthService, AuthService>();
 
-// Servicios inyectables
-builder.Services.AddScoped<ProtectedLocalStorage>();
 
 // Componentes interactivos
 builder.Services.AddRazorComponents()

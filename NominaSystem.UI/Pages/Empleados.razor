@@ -43,39 +43,36 @@ else
         </tbody>
     </table>
 }
+
 @code {
     private List<Empleado>? empleados;
-    private bool cargado = false;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender && !cargado)
+        // Delay mínimo para evitar error por prerenderizado
+        await Task.Delay(1);
+
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+
+        if (string.IsNullOrEmpty(token))
         {
-            cargado = true;
+            Console.WriteLine("❌ Token no encontrado");
+            Navigation.NavigateTo("/login", true);
+            return;
+        }
 
-            var token = await LocalStorage.GetItemAsync<string>("authToken");
+        Console.WriteLine("✅ Token encontrado: " + token);
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-            if (string.IsNullOrEmpty(token))
-            {
-                Console.WriteLine("❌ Token no encontrado");
-                Navigation.NavigateTo("/login", true);
-                return;
-            }
-
-            Console.WriteLine("✅ Token encontrado: " + token);
-            Http.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            try
-            {
-                empleados = await Http.GetFromJsonAsync<List<Empleado>>("api/Empleados");
-                Console.WriteLine("✅ Empleados cargados correctamente.");
-                StateHasChanged(); // 🔄 Forzar recarga
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ Error al obtener empleados: " + ex.Message);
-            }
+        try
+        {
+            empleados = await Http.GetFromJsonAsync<List<Empleado>>("api/Empleados");
+            Console.WriteLine("✅ Empleados cargados correctamente.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Error al obtener empleados: " + ex.Message);
         }
     }
 
@@ -108,4 +105,3 @@ else
         public string EstadoLaboral { get; set; } = "";
     }
 }
-

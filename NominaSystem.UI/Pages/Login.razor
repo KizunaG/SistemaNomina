@@ -7,7 +7,8 @@
 
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
-@inject ProtectedLocalStorage LocalStorage
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
 
 <h3>Iniciar sesión</h3>
 <EditForm Model="@loginModel" OnSubmit="HandleLogin">
@@ -46,7 +47,8 @@
                 error = null;
 
                 // Guardar el token de forma segura
-                await LocalStorage.SetAsync("authToken", token);
+                await LocalStorage.SetItemAsync("authToken", token);
+
 
                 Navigation.NavigateTo("/empleados");
             }
