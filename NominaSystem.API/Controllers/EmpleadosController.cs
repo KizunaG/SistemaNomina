@@ -2,19 +2,47 @@
 using NominaSystem.Application.Interfaces;
 using NominaSystem.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
-
+using NominaSystem.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace NominaSystem.API.Controllers;
+
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class EmpleadosController : ControllerBase
 {
     private readonly IEmpleadoService _service;
+    private readonly ApplicationDbContext _context;
 
-    public EmpleadosController(IEmpleadoService service)
+    public EmpleadosController(IEmpleadoService service, ApplicationDbContext context)
     {
         _service = service;
+        _context = context;
+    }
+
+    [HttpGet("filtrar")]
+    public async Task<IActionResult> Filtrar([FromQuery] string? busqueda, [FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 10)
+    {
+        var query = _context.Empleados.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(busqueda))
+        {
+            query = query.Where(e => e.Nombre.Contains(busqueda) || e.DPI.Contains(busqueda));
+        }
+
+        var totalRegistros = await query.CountAsync();
+
+        var empleados = await query
+            .Skip((pagina - 1) * tamanoPagina)
+            .Take(tamanoPagina)
+            .ToListAsync();
+
+        return Ok(new
+        {
+            Datos = empleados,
+            Total = totalRegistros
+        });
     }
 
     [HttpGet]
