@@ -1,12 +1,18 @@
 @using Microsoft.AspNetCore.Components.Routing
 
-<NavLink class="nav-link" href="/login">
-    <span class="oi oi-lock-locked" aria-hidden="true"></span>
-</NavLink>
+<nav class="navbar navbar-expand-lg navbar-light bg-light px-4">
+    <a class="navbar-brand" href="/">Sistema de Nómina</a>
 
-<nav>
-    <ul>
-        <li><a href="/">login</a></li>
-        <li><a href="/empleados">Empleados</a></li>
-    </ul>
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav me-auto">
+
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/login">Login</NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/empleados" Match="NavLinkMatch.All">Empleados</NavLink>
+            </li>
+        </ul>
+    </div>
 </nav>
+
