@@ -6,6 +6,8 @@ using NominaSystem.Application.DTOs;
 using NominaSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using NominaSystem.Infrastructure.Documents;
+
 
 namespace NominaSystem.Infrastructure.Services
 {
@@ -222,5 +224,28 @@ namespace NominaSystem.Infrastructure.Services
         }
 
 
+
+        public async Task<byte[]> GenerarExpedienteEmpleadoPdfAsync(int empleadoId)
+        {
+            var empleado = await _context.Empleados.FindAsync(empleadoId);
+            if (empleado == null)
+                throw new Exception("Empleado no encontrado");
+
+            var documentos = await _context.DocumentosEmpleado
+                .Where(d => d.ID_Empleado == empleadoId)
+                .ToListAsync();
+
+            var historial = await _context.InformacionAcademica
+                .Where(h => h.ID_Empleado == empleadoId)
+                .ToListAsync();
+
+            var doc = new DocumentExpedienteEmpleado(empleado, documentos, historial);
+
+            using var stream = new MemoryStream();
+            doc.GeneratePdf(stream);
+            return stream.ToArray();
+        }
     }
 }
+
+
