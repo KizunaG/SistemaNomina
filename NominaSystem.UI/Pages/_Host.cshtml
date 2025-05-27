@@ -21,5 +21,15 @@
     </app>
 
     <script src="_framework/blazor.server.js"></script>
+
+    <script>
+        window.downloadFileFromBytes = (base64, filename) => {
+            const link = document.createElement('a');
+            link.href = 'data:application/pdf;base64,' + base64;
+            link.download = filename;
+            link.click();
+        };
+    </script>
+
 </body>
 </html>

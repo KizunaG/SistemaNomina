@@ -28,6 +28,7 @@ else
                 <th>Estado</th>
                 <th>Cargo</th>
                 <th>Departamento</th>
+                <th>Expediente</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -44,8 +45,19 @@ else
                     <td>@emp.CargoNombre</td>
                     <td>@emp.DepartamentoNombre</td>
                     <td>
+                        @if (expedientesCompletos.TryGetValue(emp.Id, out var completo) && completo)
+                        {
+                            <span class="text-success fw-bold">✅</span>
+                        }
+                        else
+                        {
+                            <span class="text-danger fw-bold">❌</span>
+                        }
+                    </td>
+                    <td>
                         <button class="btn btn-warning btn-sm" @onclick="@(() => EditarEmpleado(emp.Id))">Editar</button>
                         <button class="btn btn-danger btn-sm" @onclick="@(() => EliminarEmpleado(emp.Id))">Eliminar</button>
+                        <button class="btn btn-info btn-sm" @onclick="@(() => VerExpediente(emp.Id))">Ver Expediente</button>
                     </td>
                 </tr>
             }
@@ -56,11 +68,10 @@ else
 
 @code {
     private List<EmpleadoDto>? empleados;
-
+    private Dictionary<int, bool> expedientesCompletos = new();
 
     protected override async Task OnInitializedAsync()
     {
-        // Delay mínimo para evitar error por prerenderizado
         await Task.Delay(1);
 
         var token = await LocalStorage.GetItemAsync<string>("authToken");
@@ -80,6 +91,19 @@ else
         {
             empleados = await Http.GetFromJsonAsync<List<EmpleadoDto>>("api/Empleados");
 
+            foreach (var emp in empleados)
+            {
+                try
+                {
+                    var validacion = await Http.GetFromJsonAsync<bool>($"api/ExpedienteEmpleado/validar/{emp.Id}");
+                    expedientesCompletos[emp.Id] = validacion;
+                }
+                catch
+                {
+                    expedientesCompletos[emp.Id] = false;
+                }
+            }
+
             Console.WriteLine("✅ Empleados cargados correctamente.");
         }
         catch (Exception ex)
@@ -90,6 +114,7 @@ else
 
     private void AgregarEmpleado() => Navigation.NavigateTo("/empleados/agregar");
     private void EditarEmpleado(int id) => Navigation.NavigateTo($"/empleados/editar/{id}");
+    private void VerExpediente(int id) => Navigation.NavigateTo($"/empleados/expediente/{id}");
 
     private async Task EliminarEmpleado(int id)
     {
@@ -100,7 +125,6 @@ else
         if (response.IsSuccessStatusCode)
         {
             empleados = await Http.GetFromJsonAsync<List<EmpleadoDto>>("api/Empleados");
-
             StateHasChanged();
         }
         else
