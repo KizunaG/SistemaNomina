@@ -8,107 +8,197 @@
 <EditForm Model="nuevoEmpleado" OnValidSubmit="GuardarEmpleado">
     <DataAnnotationsValidator />
 
-    <div class="mb-3">
-        <label>Nombre:</label>
-        <InputText class="form-control" @bind-Value="nuevoEmpleado.Nombre" />
-        <ValidationMessage For="@(() => nuevoEmpleado.Nombre)" class="text-danger" />
+    <div class="accordion" id="formAccordion">
+
+        <!-- Sección: Datos Generales -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingGenerales">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGenerales">
+                    Datos Generales
+                </button>
+            </h2>
+            <div id="collapseGenerales" class="accordion-collapse collapse show" data-bs-parent="#formAccordion">
+                <div class="accordion-body">
+
+                    <div class="mb-3">
+                        <label>Nombre:</label>
+                        <InputText class="form-control" @bind-Value="nuevoEmpleado.Nombre" />
+                        <ValidationMessage For="@(() => nuevoEmpleado.Nombre)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>DPI:</label>
+                        <InputText class="form-control" @bind-Value="nuevoEmpleado.Dpi" />
+                        <ValidationMessage For="@(() => nuevoEmpleado.Dpi)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Teléfono:</label>
+                        <InputText class="form-control" @bind-Value="nuevoEmpleado.Telefono" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Estado Laboral:</label>
+                        <InputSelect class="form-control" @bind-Value="nuevoEmpleado.EstadoLaboral">
+                            <option value="">-- Seleccionar estado --</option>
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Dirección:</label>
+                        <InputText class="form-control" @bind-Value="nuevoEmpleado.Direccion" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Fecha de Ingreso:</label>
+                        <InputDate class="form-control" @bind-Value="nuevoEmpleado.FechaIngreso" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>ID Cargo:</label>
+                        <InputNumber class="form-control" @bind-Value="nuevoEmpleado.ID_Cargo" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>ID Departamento:</label>
+                        <InputNumber class="form-control" @bind-Value="nuevoEmpleado.ID_Departamento" />
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección: Documentos -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingDocumentos">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDocumentos">
+                    Documentos
+                </button>
+            </h2>
+            <div id="collapseDocumentos" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                <div class="accordion-body">
+
+                    <div class="mb-3">
+                        <label>Nombre del Documento:</label>
+                        <InputText class="form-control" @bind-Value="nuevoDocumento.Nombre" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Tipo de Documento:</label>
+                        <InputText class="form-control" @bind-Value="nuevoDocumento.TipoDocumento" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Ruta del Archivo:</label>
+                        <InputText class="form-control" @bind-Value="nuevoDocumento.RutaArchivo" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Fecha de Entrega:</label>
+                        <InputDate class="form-control" @bind-Value="nuevoDocumento.FechaEntrega" />
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección: Historial Académico -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingAcademico">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAcademico">
+                    Historial Académico
+                </button>
+            </h2>
+            <div id="collapseAcademico" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                <div class="accordion-body">
+
+                    <div class="mb-3">
+                        <label>Título:</label>
+                        <InputText class="form-control" @bind-Value="nuevoAcademico.Titulo" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Grado Académico:</label>
+                        <InputText class="form-control" @bind-Value="nuevoAcademico.GradoAcademico" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Institución:</label>
+                        <InputText class="form-control" @bind-Value="nuevoAcademico.Institucion" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Fecha de Graduación:</label>
+                        <InputDate class="form-control" @bind-Value="nuevoAcademico.FechaGraduacion" />
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <div class="mb-3">
-        <label>DPI:</label>
-        <InputText class="form-control" @bind-Value="nuevoEmpleado.Dpi" />
-        <ValidationMessage For="@(() => nuevoEmpleado.Dpi)" class="text-danger" />
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
     </div>
-
-    <div class="mb-3">
-        <label>Teléfono:</label>
-        <InputText class="form-control" @bind-Value="nuevoEmpleado.Telefono" />
-        <ValidationMessage For="@(() => nuevoEmpleado.Telefono)" class="text-danger" />
-    </div>
-
-    <div class="mb-3">
-        <label>Estado Laboral:</label>
-        <InputSelect class="form-control" @bind-Value="nuevoEmpleado.EstadoLaboral">
-            <option value="">-- Seleccionar estado --</option>
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
-        </InputSelect>
-        <ValidationMessage For="@(() => nuevoEmpleado.EstadoLaboral)" class="text-danger" />
-    </div>
-
-    <div class="mb-3">
-        <label>Dirección:</label>
-        <InputText class="form-control" @bind-Value="nuevoEmpleado.Direccion" />
-        <ValidationMessage For="@(() => nuevoEmpleado.Direccion)" class="text-danger" />
-    </div>
-
-    <div class="mb-3">
-        <label>Fecha de Ingreso:</label>
-        <InputDate class="form-control" @bind-Value="nuevoEmpleado.FechaIngreso" />
-        <ValidationMessage For="@(() => nuevoEmpleado.FechaIngreso)" class="text-danger" />
-    </div>
-
-    <div class="mb-3">
-        <label>ID Cargo:</label>
-        <InputNumber class="form-control" @bind-Value="nuevoEmpleado.ID_Cargo" />
-        <ValidationMessage For="@(() => nuevoEmpleado.ID_Cargo)" class="text-danger" />
-    </div>
-
-    <div class="mb-3">
-        <label>ID Departamento:</label>
-        <InputNumber class="form-control" @bind-Value="nuevoEmpleado.ID_Departamento" />
-        <ValidationMessage For="@(() => nuevoEmpleado.ID_Departamento)" class="text-danger" />
-    </div>
-
-    <button type="submit" class="btn btn-success">Guardar</button>
-    <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
 </EditForm>
 
 @code {
     private Empleado nuevoEmpleado = new();
+    private DocumentoDto nuevoDocumento = new();
+    private InformacionAcademicaDto nuevoAcademico = new();
 
     private async Task GuardarEmpleado()
     {
-        await Http.PostAsJsonAsync("api/Empleados", nuevoEmpleado);
+        var response = await Http.PostAsJsonAsync("api/Empleados", nuevoEmpleado);
+        var creado = await response.Content.ReadFromJsonAsync<Empleado>();
+
+        if (creado != null)
+        {
+            nuevoDocumento.ID_Empleado = creado.Id;
+            await Http.PostAsJsonAsync("api/DocumentoEmpleado", nuevoDocumento);
+
+            nuevoAcademico.ID_Empleado = creado.Id;
+            await Http.PostAsJsonAsync("api/InformacionAcademica", nuevoAcademico);
+        }
+
         Navigation.NavigateTo("/empleados");
     }
 
-    private void Cancelar()
-    {
-        Navigation.NavigateTo("/empleados");
-    }
+    private void Cancelar() => Navigation.NavigateTo("/empleados");
 
     public class Empleado
     {
         public int Id { get; set; }
-
-        [Required(ErrorMessage = "El nombre es obligatorio")]
-        [StringLength(100, ErrorMessage = "El nombre no puede exceder 100 caracteres")]
-        public string Nombre { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "El DPI es obligatorio")]
-        [RegularExpression(@"^\d{13}$", ErrorMessage = "El DPI debe tener 13 dígitos")]
-        public string Dpi { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "El teléfono es obligatorio")]
-        [Phone(ErrorMessage = "Debe ser un número de teléfono válido")]
-        public string Telefono { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Debe seleccionar un estado laboral")]
-        public string EstadoLaboral { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "La dirección es obligatoria")]
-        public string Direccion { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Debe seleccionar una fecha válida")]
-        public DateTime FechaIngreso { get; set; } = DateTime.Today;
-
-        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un cargo válido")]
+        [Required] public string Nombre { get; set; } = string.Empty;
+        [Required] public string Dpi { get; set; } = string.Empty;
+        [Required] public string Telefono { get; set; } = string.Empty;
+        [Required] public string EstadoLaboral { get; set; } = string.Empty;
+        [Required] public string Direccion { get; set; } = string.Empty;
+        [Required] public DateTime FechaIngreso { get; set; } = DateTime.Today;
         public int ID_Cargo { get; set; }
-
-        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un departamento válido")]
         public int ID_Departamento { get; set; }
     }
-}
 
+    public class DocumentoDto
+    {
+        public int ID_Empleado { get; set; }
+        public string? Nombre { get; set; }
+        public string TipoDocumento { get; set; } = string.Empty;
+        public string RutaArchivo { get; set; } = string.Empty;
+        public DateTime? FechaEntrega { get; set; }
+    }
+
+    public class InformacionAcademicaDto
+    {
+        public int ID_Empleado { get; set; }
+        public string Titulo { get; set; } = string.Empty;
+        public string GradoAcademico { get; set; } = string.Empty;
+        public string Institucion { get; set; } = string.Empty;
+        public DateTime? FechaGraduacion { get; set; }
+    }
+}
 

@@ -47,4 +47,11 @@ public class InformacionAcademicaController : ControllerBase
         await _service.DeleteAsync(id);
         return NoContent();
     }
+    [HttpGet("por-empleado/{empleadoId}")]
+    public async Task<IActionResult> GetByEmpleado(int empleadoId)
+    {
+        var lista = await _service.GetByEmpleadoIdAsync(empleadoId);
+        return Ok(lista);
+    }
+
 }

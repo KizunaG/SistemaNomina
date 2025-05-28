@@ -52,14 +52,17 @@
         try
         {
             empleado = await Http.GetFromJsonAsync<EmpleadoDto>($"api/Empleados/{id}");
-            documentos = await Http.GetFromJsonAsync<List<DocumentoDto>>($"api/DocumentoEmpleado/{id}");
-            historialAcademico = await Http.GetFromJsonAsync<List<InformacionAcademicaDto>>($"api/InformacionAcademica/{id}");
+
+            // 🔧 Estas rutas son las que deberían usarse si el backend lo implementaste así:
+            documentos = await Http.GetFromJsonAsync<List<DocumentoDto>>($"api/DocumentoEmpleado/por-empleado/{id}");
+            historialAcademico = await Http.GetFromJsonAsync<List<InformacionAcademicaDto>>($"api/InformacionAcademica/por-empleado/{id}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error al cargar datos del expediente: {ex.Message}");
         }
     }
+
 }
 
 <h3>Expediente del Empleado</h3>
@@ -87,14 +90,27 @@ else
     }
     else
     {
-        <ul class="list-group mb-3">
-            @foreach (var doc in documentos)
-            {
-                <li class="list-group-item">
-                    <strong>@doc.Nombre:</strong> @doc.Descripcion
-                </li>
-            }
-        </ul>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Ruta</th>
+                    <th>Fecha de Entrega</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var doc in documentos)
+                {
+                    <tr>
+                        <td>@doc.Nombre</td>
+                        <td>@doc.TipoDocumento</td>
+                        <td>@doc.RutaArchivo</td>
+                        <td>@(doc.FechaEntrega?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     }
 
     <h5>🎓 Historial Académico</h5>
@@ -109,7 +125,7 @@ else
                 <tr>
                     <th>Título</th>
                     <th>Institución</th>
-                    <th>Año</th>
+                    <th>Fecha de Graduación</th>
                 </tr>
             </thead>
             <tbody>
@@ -118,7 +134,7 @@ else
                     <tr>
                         <td>@item.Titulo</td>
                         <td>@item.Institucion</td>
-                        <td>@item.Anio</td>
+                        <td>@(item.FechaGraduacion?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                     </tr>
                 }
             </tbody>
