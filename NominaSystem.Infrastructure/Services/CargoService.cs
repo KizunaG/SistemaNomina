@@ -41,4 +41,13 @@ public class CargoService : ICargoService
             await _context.SaveChangesAsync();
         }
     }
+
+    // Nuevo método para buscar cargos por nombre
+    public async Task<List<Cargo>> BuscarPorNombreAsync(string nombre)
+    {
+        return await _context.Cargos
+            .Where(c => c.NombreCargo.Contains(nombre))
+            .ToListAsync();
+    }
 }
+

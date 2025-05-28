@@ -63,7 +63,21 @@ namespace NominaSystem.Infrastructure.Data
                 .HasForeignKey(n => n.ID_Empleado)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Relación entre Empleado y Cargo
+            modelBuilder.Entity<Empleado>()
+                .HasOne(e => e.Cargo)           // Un empleado tiene un Cargo
+                .WithMany()                     // Un cargo puede tener varios empleados
+                .HasForeignKey(e => e.ID_Cargo) // La propiedad ID_Cargo en Empleado es la clave foránea
+                .OnDelete(DeleteBehavior.SetNull); // Si se elimina un cargo, no eliminar empleados asociados
+
+            // Relación entre Empleado y Departamento
+            modelBuilder.Entity<Empleado>()
+                .HasOne(e => e.Departamento)    // Un empleado tiene un Departamento
+                .WithMany()                     // Un departamento puede tener varios empleados
+                .HasForeignKey(e => e.ID_Departamento)  // La propiedad ID_Departamento en Empleado es la clave foránea
+                .OnDelete(DeleteBehavior.SetNull); // Si se elimina un departamento, no eliminar empleados asociados
         }
+
     }
 }
 

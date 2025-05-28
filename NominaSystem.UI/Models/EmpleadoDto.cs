@@ -10,7 +10,7 @@ public class EmpleadoDto
     public string EstadoLaboral { get; set; } = string.Empty;
     public string Direccion { get; set; } = "";
     public DateTime FechaIngreso { get; set; }
-    public string? CargoNombre { get; set; }  // ← nombre del cargo
-    public string? DepartamentoNombre { get; set; } // ← nombre del departamento
+    public string? NombreCargo { get; set; } = "";  // ← nombre del cargo
+    public string? NombreDepartamento { get; set; } = ""; // ← nombre del departamento
 
 }

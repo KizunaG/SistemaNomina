@@ -49,8 +49,9 @@ public class DocumentExpedienteEmpleado : IDocument
                     col.Item().Text($"Dirección: {_empleado.Direccion}");
                     col.Item().Text($"Estado: {_empleado.EstadoLaboral}");
                     col.Item().Text($"Fecha Ingreso: {_empleado.FechaIngreso?.ToShortDateString() ?? "N/A"}");
-                    col.Item().Text($"Cargo: {_empleado.ID_Cargo?.ToString() ?? "N/A"}");
-                    col.Item().Text($"Departamento: {_empleado.ID_Departamento?.ToString() ?? "N/A"}");
+                    col.Item().Text($"Cargo: {_empleado.Cargo?.NombreCargo ?? "N/A"}");
+                    col.Item().Text($"Departamento: {_empleado.Departamento?.NombreDepartamento ?? "N/A"}");
+
 
 
                     col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);

@@ -42,8 +42,8 @@ else
                     <td>@emp.Direccion</td>
                     <td>@emp.FechaIngreso.ToShortDateString()</td>
                     <td>@emp.EstadoLaboral</td>
-                    <td>@emp.CargoNombre</td>
-                    <td>@emp.DepartamentoNombre</td>
+                    <td>@emp.NombreCargo</td>
+                    <td>@emp.NombreDepartamento</td>
                     <td>
                         @if (expedientesCompletos.TryGetValue(emp.Id, out var completo) && completo)
                         {

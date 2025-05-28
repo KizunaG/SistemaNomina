@@ -26,6 +26,17 @@ public class CargosController : ControllerBase
         return cargo == null ? NotFound() : Ok(cargo);
     }
 
+    // Nuevo endpoint para búsqueda por nombre parcial o completo
+    [HttpGet("buscar")]
+    public async Task<IActionResult> BuscarPorNombre([FromQuery] string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+            return BadRequest("Debe proporcionar un nombre para la búsqueda.");
+
+        var resultados = await _service.BuscarPorNombreAsync(nombre);
+        return Ok(resultados);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Cargo cargo)
     {
@@ -48,3 +59,4 @@ public class CargosController : ControllerBase
         return NoContent();
     }
 }
+

@@ -19,6 +19,16 @@ public class DepartamentosController : ControllerBase
     public async Task<IActionResult> GetAll() =>
         Ok(await _service.GetAllAsync());
 
+    [HttpGet("buscar")]
+    public async Task<IActionResult> BuscarPorNombre([FromQuery] string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+            return BadRequest("El parámetro 'nombre' es obligatorio.");
+
+        var departamentos = await _service.BuscarPorNombreAsync(nombre);
+        return Ok(departamentos);
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -48,3 +58,4 @@ public class DepartamentosController : ControllerBase
         return NoContent();
     }
 }
+

@@ -57,14 +57,15 @@
                     </div>
 
                     <div class="mb-3">
-                        <label>ID Cargo:</label>
-                        <InputNumber class="form-control" @bind-Value="nuevoEmpleado.ID_Cargo" />
+                        <label>Cargo:</label>
+                        <InputText class="form-control" @bind-Value="nuevoEmpleado.NombreCargo" />
                     </div>
 
                     <div class="mb-3">
-                        <label>ID Departamento:</label>
-                        <InputNumber class="form-control" @bind-Value="nuevoEmpleado.ID_Departamento" />
+                        <label>Departamento:</label>
+                        <InputText class="form-control" @bind-Value="nuevoEmpleado.NombreDepartamento" />
                     </div>
+
 
                 </div>
             </div>
@@ -179,8 +180,8 @@
         [Required] public string EstadoLaboral { get; set; } = string.Empty;
         [Required] public string Direccion { get; set; } = string.Empty;
         [Required] public DateTime FechaIngreso { get; set; } = DateTime.Today;
-        public int ID_Cargo { get; set; }
-        public int ID_Departamento { get; set; }
+        [Required] public string NombreCargo { get; set; } = string.Empty;
+        [Required] public string NombreDepartamento { get; set; } = string.Empty;
     }
 
     public class DocumentoDto

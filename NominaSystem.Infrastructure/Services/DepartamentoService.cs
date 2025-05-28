@@ -20,6 +20,11 @@ public class DepartamentoService : IDepartamentoService
     public async Task<Departamento?> GetByIdAsync(int id) =>
         await _context.Departamentos.FindAsync(id);
 
+    public async Task<List<Departamento>> BuscarPorNombreAsync(string nombre) =>
+        await _context.Departamentos
+            .Where(d => d.NombreDepartamento.Contains(nombre))
+            .ToListAsync();
+
     public async Task AddAsync(Departamento departamento)
     {
         _context.Departamentos.Add(departamento);
@@ -42,3 +47,4 @@ public class DepartamentoService : IDepartamentoService
         }
     }
 }
+
