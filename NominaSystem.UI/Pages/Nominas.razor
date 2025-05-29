@@ -1,0 +1,89 @@
+﻿@page "/nominas"
+@using NominaSystem.UI.Models
+@inject NominaService NominaService
+@inject NavigationManager Navigation
+
+
+<h3>Lista de Nóminas</h3>
+
+<button class="btn btn-primary mb-3" @onclick="AgregarNomina">Agregar Nómina</button>
+
+@if (nominas == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (!nominas.Any())
+{
+    <p>No hay nóminas registradas.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Empleado</th>
+                <th>Periodo</th>
+                <th>Total Pago</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var nomina in nominas)
+            {
+                <tr>
+                    <td>@nomina.NombreEmpleado</td>
+                    <td>@nomina.Periodo</td>
+                    <td>@nomina.TotalPago.ToString("C")</td>
+                    <td>
+                        <button class="btn btn-sm btn-info me-1" @onclick="() => VerNomina(nomina.Id)">Ver</button>
+                        <button class="btn btn-sm btn-warning me-1" @onclick="() => EditarNomina(nomina.Id)">Editar</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarNomina(nomina.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<NominaDto>? nominas;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarNominas();
+    }
+
+    private async Task CargarNominas()
+    {
+        nominas = await NominaService.GetNominasAsync();
+    }
+
+    private void AgregarNomina()
+    {
+        Navigation.NavigateTo("/nominas/agregar");
+    }
+
+    private void EditarNomina(int id)
+    {
+        Navigation.NavigateTo($"/nominas/editar/{id}");
+    }
+
+    private void VerNomina(int id)
+    {
+        Navigation.NavigateTo($"/nominas/ver/{id}");
+    }
+
+    private async Task EliminarNomina(int id)
+    {
+        bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", $"¿Está seguro que desea eliminar la nómina con Id {id}?");
+        if (confirmado)
+        {
+            await NominaService.DeleteNominaAsync(id);
+            await CargarNominas();
+        }
+    }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; }
+}
+

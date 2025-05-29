@@ -25,6 +25,7 @@ builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddScoped<NominaService>();
 
 // Componentes interactivos
 builder.Services.AddRazorComponents()

@@ -1,7 +1,12 @@
-﻿using NominaSystem.Application.Interfaces;
+﻿using NominaSystem.Application.DTOs;
+using NominaSystem.Application.Interfaces;
 using NominaSystem.Domain.Entities;
 using NominaSystem.Infrastructure.Data;
+using static System.Net.Mime.MediaTypeNames;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NominaSystem.Infrastructure.Services
 {
@@ -42,7 +47,7 @@ namespace NominaSystem.Infrastructure.Services
             }
         }
 
-        // 👇 Método para procesar nómina automáticamente
+        // Método para procesar nómina automáticamente
         public async Task<Nomina> ProcesarNominaAsync(Nomina nomina)
         {
             nomina.TotalPago = nomina.SalarioBase + nomina.HorasExtras + nomina.Bonificaciones - nomina.Descuentos;
@@ -52,9 +57,9 @@ namespace NominaSystem.Infrastructure.Services
             await _context.SaveChangesAsync();
             return nomina;
         }
+
         public async Task<bool> ValidarAntesProcesarNominaAsync(int empleadoId)
         {
-            // Verifica que el expediente esté completo antes de procesar la nómina
             var configuraciones = await _context.ConfiguracionExpedientes
                 .Where(c => c.Obligatorio)
                 .Select(c => c.TipoDocumento)
@@ -66,9 +71,23 @@ namespace NominaSystem.Infrastructure.Services
                 .ToListAsync();
 
             return configuraciones
-    .Where(doc => doc != null)
-    .All(doc => entregados.Where(e => e != null).Contains(doc));
+                .Where(doc => doc != null)
+                .All(doc => entregados.Where(e => e != null).Contains(doc));
+        }
 
+        // Nuevo método para obtener la lista de nóminas con información para mostrar en lista
+        public async Task<List<NominaDto>> GetAllNominasAsync()
+        {
+            return await _context.Nominas
+                .Include(n => n.Empleado)
+                .Select(n => new NominaDto
+                {
+                    Id = n.Id,
+                    NombreEmpleado = n.Empleado != null ? n.Empleado.Nombre : "N/A",
+                    Periodo = $"{n.PeriodoInicio:dd/MM/yyyy} - {n.PeriodoFin:dd/MM/yyyy}",
+                    TotalPago = n.TotalPago
+                })
+                .ToListAsync();
         }
 
     }
