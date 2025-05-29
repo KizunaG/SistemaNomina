@@ -64,12 +64,15 @@ public class EmpleadosController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] EmpleadoDto empleadoDto)
     {
-        if (id != empleadoDto.Id) return BadRequest("ID no coincide");
+        if (id != empleadoDto.Id)
+            return BadRequest("ID no coincide");
 
         await _service.UpdateAsync(empleadoDto);
 
-        return NoContent();
+        // Cambiar NoContent() por Ok con algún dato o mensaje
+        return Ok(new { mensaje = "Empleado actualizado correctamente" });
     }
+
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)

@@ -6,151 +6,165 @@
 
 <h3>Editar Empleado</h3>
 
-<EditForm Model="empleado" OnValidSubmit="GuardarCambios">
-    <DataAnnotationsValidator />
+@if (cargando)
+{
+    <p>Cargando empleado...</p>
+}
+else
+{
+    <EditForm Model="empleado" OnValidSubmit="GuardarCambios">
+        <DataAnnotationsValidator />
 
-    <div class="accordion" id="editarEmpleadoAccordion">
+        <div class="accordion" id="editarEmpleadoAccordion">
 
-        <!-- Sección: Datos Generales -->
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="headingGenerales">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGenerales" aria-expanded="true" aria-controls="collapseGenerales">
-                    Datos Generales
-                </button>
-            </h2>
-            <div id="collapseGenerales" class="accordion-collapse collapse show" aria-labelledby="headingGenerales" data-bs-parent="#editarEmpleadoAccordion">
-                <div class="accordion-body">
+            <!-- Sección: Datos Generales -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingGenerales">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGenerales" aria-expanded="true" aria-controls="collapseGenerales">
+                        Datos Generales
+                    </button>
+                </h2>
+                <div id="collapseGenerales" class="accordion-collapse collapse show" aria-labelledby="headingGenerales" data-bs-parent="#editarEmpleadoAccordion">
+                    <div class="accordion-body">
 
-                    <div class="mb-3">
-                        <label>Nombre:</label>
-                        <InputText class="form-control" @bind-Value="empleado.Nombre" />
+                        <div class="mb-3">
+                            <label>Nombre:</label>
+                            <InputText class="form-control" @bind-Value="empleado.Nombre" />
+                            <ValidationMessage For="@(() => empleado.Nombre)" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>DPI:</label>
+                            <InputText class="form-control" @bind-Value="empleado.Dpi" />
+                            <ValidationMessage For="@(() => empleado.Dpi)" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Teléfono:</label>
+                            <InputText class="form-control" @bind-Value="empleado.Telefono" />
+                            <ValidationMessage For="@(() => empleado.Telefono)" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Estado Laboral:</label>
+                            <InputSelect class="form-control" @bind-Value="empleado.EstadoLaboral">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="Activo">Activo</option>
+                                <option value="Inactivo">Inactivo</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => empleado.EstadoLaboral)" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Dirección:</label>
+                            <InputText class="form-control" @bind-Value="empleado.Direccion" />
+                            <ValidationMessage For="@(() => empleado.Direccion)" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Fecha Ingreso:</label>
+                            <InputDate class="form-control" @bind-Value="empleado.FechaIngreso" />
+                            <ValidationMessage For="@(() => empleado.FechaIngreso)" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Cargo:</label>
+                            <InputSelect class="form-control" @bind-Value="empleado.Id_Cargo">
+                                <option value="">-- Seleccione Cargo --</option>
+                                @foreach (var c in cargos)
+                                {
+                                    <option value="@c.Id">@c.NombreCargo</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Departamento:</label>
+                            <InputSelect class="form-control" @bind-Value="empleado.Id_Departamento">
+                                <option value="">-- Seleccione Departamento --</option>
+                                @foreach (var d in departamentos)
+                                {
+                                    <option value="@d.Id">@d.NombreDepartamento</option>
+                                }
+                            </InputSelect>
+                        </div>
+
                     </div>
-
-                    <div class="mb-3">
-                        <label>DPI:</label>
-                        <InputText class="form-control" @bind-Value="empleado.Dpi" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Teléfono:</label>
-                        <InputText class="form-control" @bind-Value="empleado.Telefono" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Estado Laboral:</label>
-                        <InputSelect class="form-control" @bind-Value="empleado.EstadoLaboral">
-                            <option value="">-- Seleccionar --</option>
-                            <option value="Activo">Activo</option>
-                            <option value="Inactivo">Inactivo</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Dirección:</label>
-                        <InputText class="form-control" @bind-Value="empleado.Direccion" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Fecha Ingreso:</label>
-                        <InputDate class="form-control" @bind-Value="empleado.FechaIngreso" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Cargo:</label>
-                        <InputSelect class="form-control" @bind-Value="empleado.Id_Cargo">
-                            <option value="">-- Seleccione Cargo --</option>
-                            @foreach (var c in cargos)
-                            {
-                                <option value="@c.Id">@c.NombreCargo</option>
-                            }
-                        </InputSelect>
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Departamento:</label>
-                        <InputSelect class="form-control" @bind-Value="empleado.Id_Departamento">
-                            <option value="">-- Seleccione Departamento --</option>
-                            @foreach (var d in departamentos)
-                            {
-                                <option value="@d.Id">@d.NombreDepartamento</option>
-                            }
-                        </InputSelect>
-                    </div>
-
                 </div>
             </div>
-        </div>
 
-        <!-- Sección: Documentos -->
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="headingDocumentos">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDocumentos" aria-expanded="false" aria-controls="collapseDocumentos">
-                    Documentos
-                </button>
-            </h2>
-            <div id="collapseDocumentos" class="accordion-collapse collapse" aria-labelledby="headingDocumentos" data-bs-parent="#editarEmpleadoAccordion">
-                <div class="accordion-body">
+            <!-- Sección: Documentos -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingDocumentos">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDocumentos" aria-expanded="false" aria-controls="collapseDocumentos">
+                        Documentos
+                    </button>
+                </h2>
+                <div id="collapseDocumentos" class="accordion-collapse collapse" aria-labelledby="headingDocumentos" data-bs-parent="#editarEmpleadoAccordion">
+                    <div class="accordion-body">
 
-                    <div class="mb-3">
-                        <label>Tipo Documento:</label>
-                        <InputText class="form-control" @bind-Value="documento.TipoDocumento" />
+                        <div class="mb-3">
+                            <label>Tipo Documento:</label>
+                            <InputText class="form-control" @bind-Value="documento.TipoDocumento" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Ruta del Archivo:</label>
+                            <InputText class="form-control" @bind-Value="documento.RutaArchivo" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Fecha de Entrega:</label>
+                            <InputDate class="form-control" @bind-Value="documento.FechaEntrega" />
+                        </div>
+
                     </div>
-
-                    <div class="mb-3">
-                        <label>Ruta del Archivo:</label>
-                        <InputText class="form-control" @bind-Value="documento.RutaArchivo" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Fecha de Entrega:</label>
-                        <InputDate class="form-control" @bind-Value="documento.FechaEntrega" />
-                    </div>
-
                 </div>
             </div>
-        </div>
 
-        <!-- Sección: Historial Académico -->
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="headingAcademico">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAcademico" aria-expanded="false" aria-controls="collapseAcademico">
-                    Historial Académico
-                </button>
-            </h2>
-            <div id="collapseAcademico" class="accordion-collapse collapse" aria-labelledby="headingAcademico" data-bs-parent="#editarEmpleadoAccordion">
-                <div class="accordion-body">
+            <!-- Sección: Historial Académico -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingAcademico">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAcademico" aria-expanded="false" aria-controls="collapseAcademico">
+                        Historial Académico
+                    </button>
+                </h2>
+                <div id="collapseAcademico" class="accordion-collapse collapse" aria-labelledby="headingAcademico" data-bs-parent="#editarEmpleadoAccordion">
+                    <div class="accordion-body">
 
-                    <div class="mb-3">
-                        <label>Título:</label>
-                        <InputText class="form-control" @bind-Value="academico.Titulo" />
+                        <div class="mb-3">
+                            <label>Título:</label>
+                            <InputText class="form-control" @bind-Value="academico.Titulo" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Institución:</label>
+                            <InputText class="form-control" @bind-Value="academico.Institucion" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Grado Académico:</label>
+                            <InputText class="form-control" @bind-Value="academico.GradoAcademico" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Fecha de Graduación:</label>
+                            <InputDate class="form-control" @bind-Value="academico.FechaGraduacion" />
+                        </div>
+
                     </div>
-
-                    <div class="mb-3">
-                        <label>Institución:</label>
-                        <InputText class="form-control" @bind-Value="academico.Institucion" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Grado Académico:</label>
-                        <InputText class="form-control" @bind-Value="academico.GradoAcademico" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Fecha de Graduación:</label>
-                        <InputDate class="form-control" @bind-Value="academico.FechaGraduacion" />
-                    </div>
-
                 </div>
             </div>
+
         </div>
 
-    </div>
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success">Guardar Cambios</button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+        </div>
+    </EditForm>
 
-    <div class="mt-4">
-        <button type="submit" class="btn btn-success">Guardar Cambios</button>
-        <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
-    </div>
-</EditForm>
+}
 
 @code {
     [Parameter] public int id { get; set; }
@@ -162,51 +176,110 @@
     private List<Cargo> cargos = new();
     private List<Departamento> departamentos = new();
 
+    private bool cargando = true;
+
     protected override async Task OnInitializedAsync()
     {
-        // Cargar empleado a editar
+        cargos = await Http.GetFromJsonAsync<List<Cargo>>("api/Cargos");
+        departamentos = await Http.GetFromJsonAsync<List<Departamento>>("api/Departamentos");
+
         empleado = await Http.GetFromJsonAsync<Empleado>($"api/Empleados/{id}") ?? new Empleado();
 
-        // Cargar documentos e info académica
         var docs = await Http.GetFromJsonAsync<List<DocumentoDto>>($"api/DocumentoEmpleado/por-empleado/{id}");
         documento = docs?.FirstOrDefault() ?? new DocumentoDto { ID_Empleado = id };
 
         var acad = await Http.GetFromJsonAsync<List<InformacionAcademicaDto>>($"api/InformacionAcademica/por-empleado/{id}");
         academico = acad?.FirstOrDefault(a => a.ID_Empleado == id) ?? new InformacionAcademicaDto { ID_Empleado = id };
 
-        // Cargar listas para selects
-        cargos = await Http.GetFromJsonAsync<List<Cargo>>("api/Cargos");
-        departamentos = await Http.GetFromJsonAsync<List<Departamento>>("api/Departamentos");
+        cargando = false;
     }
 
     private async Task GuardarCambios()
     {
-        await Http.PutAsJsonAsync($"api/Empleados/{empleado.Id}", empleado);
+        try
+        {
+            Console.WriteLine("Iniciando GuardarCambios");
 
-        if (documento.Id > 0)
-            await Http.PutAsJsonAsync($"api/DocumentoEmpleado/{documento.Id}", documento);
-        else
-            await Http.PostAsJsonAsync("api/DocumentoEmpleado", documento);
+            var responseEmpleado = await Http.PutAsJsonAsync($"api/Empleados/{empleado.Id}", empleado);
+            if (!responseEmpleado.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Error al guardar empleado: {responseEmpleado.StatusCode}");
+                // Puedes agregar alerta visual aquí si quieres
+                // Pero no retornamos para permitir navegación y pruebas
+            }
 
-        if (academico.Id > 0)
-            await Http.PutAsJsonAsync($"api/InformacionAcademica/{academico.Id}", academico);
-        else
-            await Http.PostAsJsonAsync("api/InformacionAcademica", academico);
+            HttpResponseMessage responseDoc;
+            if (documento.Id > 0)
+            {
+                responseDoc = await Http.PutAsJsonAsync($"api/DocumentoEmpleado/{documento.Id}", documento);
+            }
+            else
+            {
+                responseDoc = await Http.PostAsJsonAsync("api/DocumentoEmpleado", documento);
+            }
+            if (!responseDoc.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Error en documento: {responseDoc.StatusCode}");
+                // Igual que antes, no retornamos aquí
+            }
 
-        Navigation.NavigateTo("/empleados");
+            HttpResponseMessage responseAcad;
+            if (academico.Id > 0)
+            {
+                responseAcad = await Http.PutAsJsonAsync($"api/InformacionAcademica/{academico.Id}", academico);
+            }
+            else
+            {
+                responseAcad = await Http.PostAsJsonAsync("api/InformacionAcademica", academico);
+            }
+            if (!responseAcad.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Error en info académica: {responseAcad.StatusCode}");
+                // Igual que antes, no retornamos aquí
+            }
+
+            Console.WriteLine("Datos guardados (o intentados), navegando a /empleados");
+            Navigation.NavigateTo("/empleados");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Excepción al guardar cambios: {ex.Message}");
+            // Igual, intentamos navegar para verificar comportamiento
+            Navigation.NavigateTo("/empleados");
+        }
     }
 
-    private void Cancelar() => Navigation.NavigateTo("/empleados");
+
+    private void Cancelar()
+    {
+        Navigation.NavigateTo("/empleados");
+    }
 
     public class Empleado
     {
         public int Id { get; set; }
-        public string Nombre { get; set; } = "";
-        public string Dpi { get; set; } = "";
-        public string Telefono { get; set; } = "";
-        public string EstadoLaboral { get; set; } = "";
-        public string Direccion { get; set; } = "";
-        public DateTime FechaIngreso { get; set; }
+
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "El nombre solo puede contener letras y espacios.")]
+        public string Nombre { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El DPI es obligatorio.")]
+        [RegularExpression(@"^\d{13}$", ErrorMessage = "El DPI debe contener exactamente 13 números.")]
+        public string Dpi { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El teléfono es obligatorio.")]
+        [RegularExpression(@"^\d{8}$", ErrorMessage = "El teléfono debe contener exactamente 8 números.")]
+        public string Telefono { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El estado laboral es obligatorio.")]
+        public string EstadoLaboral { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La dirección es obligatoria.")]
+        public string Direccion { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La fecha de ingreso es obligatoria.")]
+        public DateTime FechaIngreso { get; set; } = DateTime.Today;
+
         public int? Id_Cargo { get; set; }
         public int? Id_Departamento { get; set; }
     }
@@ -215,8 +288,8 @@
     {
         public int Id { get; set; }
         public int ID_Empleado { get; set; }
-        public string TipoDocumento { get; set; } = "";
-        public string RutaArchivo { get; set; } = "";
+        public string TipoDocumento { get; set; } = string.Empty;
+        public string RutaArchivo { get; set; } = string.Empty;
         public DateTime? FechaEntrega { get; set; }
     }
 
@@ -224,22 +297,24 @@
     {
         public int Id { get; set; }
         public int ID_Empleado { get; set; }
-        public string Titulo { get; set; } = "";
-        public string Institucion { get; set; } = "";
-        public string GradoAcademico { get; set; } = "";
+        public string Titulo { get; set; } = string.Empty;
+        public string Institucion { get; set; } = string.Empty;
+        public string GradoAcademico { get; set; } = string.Empty;
         public DateTime? FechaGraduacion { get; set; }
     }
 
     public class Cargo
     {
         public int Id { get; set; }
-        public string NombreCargo { get; set; } = "";
+        public string NombreCargo { get; set; } = string.Empty;
     }
 
     public class Departamento
     {
         public int Id { get; set; }
-        public string NombreDepartamento { get; set; } = "";
+        public string NombreDepartamento { get; set; } = string.Empty;
     }
 }
+
+
 

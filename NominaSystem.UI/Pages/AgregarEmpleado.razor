@@ -22,16 +22,19 @@
                     <div class="mb-3">
                         <label>Nombre:</label>
                         <InputText class="form-control" @bind-Value="nuevoEmpleado.Nombre" />
+                        <ValidationMessage For="@(() => nuevoEmpleado.Nombre)" class="text-danger" />
                     </div>
 
                     <div class="mb-3">
                         <label>DPI:</label>
                         <InputText class="form-control" @bind-Value="nuevoEmpleado.Dpi" />
+                        <ValidationMessage For="@(() => nuevoEmpleado.Dpi)" class="text-danger" />
                     </div>
 
                     <div class="mb-3">
                         <label>Teléfono:</label>
                         <InputText class="form-control" @bind-Value="nuevoEmpleado.Telefono" />
+                        <ValidationMessage For="@(() => nuevoEmpleado.Telefono)" class="text-danger" />
                     </div>
 
                     <div class="mb-3">
@@ -41,16 +44,19 @@
                             <option value="Activo">Activo</option>
                             <option value="Inactivo">Inactivo</option>
                         </InputSelect>
+                        <ValidationMessage For="@(() => nuevoEmpleado.EstadoLaboral)" class="text-danger" />
                     </div>
 
                     <div class="mb-3">
                         <label>Dirección:</label>
                         <InputText class="form-control" @bind-Value="nuevoEmpleado.Direccion" />
+                        <ValidationMessage For="@(() => nuevoEmpleado.Direccion)" class="text-danger" />
                     </div>
 
                     <div class="mb-3">
                         <label>Fecha de Ingreso:</label>
                         <InputDate class="form-control" @bind-Value="nuevoEmpleado.FechaIngreso" />
+                        <ValidationMessage For="@(() => nuevoEmpleado.FechaIngreso)" class="text-danger" />
                     </div>
 
                     <div class="mb-3">
@@ -155,7 +161,6 @@
     </div>
 </EditForm>
 
-
 @code {
     private Empleado nuevoEmpleado = new();
     private DocumentoDto nuevoDocumento = new();
@@ -210,19 +215,33 @@
         }
     }
 
-
-
     private void Cancelar() => Navigation.NavigateTo("/empleados");
 
     public class Empleado
     {
         public int Id { get; set; }
-        [Required] public string Nombre { get; set; } = string.Empty;
-        [Required] public string Dpi { get; set; } = string.Empty;
-        [Required] public string Telefono { get; set; } = string.Empty;
-        [Required] public string EstadoLaboral { get; set; } = string.Empty;
-        [Required] public string Direccion { get; set; } = string.Empty;
-        [Required] public DateTime FechaIngreso { get; set; } = DateTime.Today;
+
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "El nombre solo puede contener letras y espacios.")]
+        public string Nombre { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El DPI es obligatorio.")]
+        [RegularExpression(@"^\d{13}$", ErrorMessage = "El DPI debe contener exactamente 13 números.")]
+        public string Dpi { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El teléfono es obligatorio.")]
+        [RegularExpression(@"^\d{8}$", ErrorMessage = "El teléfono debe contener exactamente 8 números.")]
+        public string Telefono { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El estado laboral es obligatorio.")]
+        public string EstadoLaboral { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La dirección es obligatoria.")]
+        public string Direccion { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La fecha de ingreso es obligatoria.")]
+        public DateTime FechaIngreso { get; set; } = DateTime.Today;
+
         public int? Id_Cargo { get; set; }
         public int? Id_Departamento { get; set; }
     }
@@ -257,6 +276,7 @@
         public string NombreDepartamento { get; set; } = string.Empty;
     }
 }
+
 
 
 
