@@ -10,6 +10,7 @@ namespace NominaSystem.Domain.Entities
     {
         public int Id { get; set; }
         public int ID_Empleado { get; set; }
+        public string? Nombre { get; set; }
         public required string TipoDocumento { get; set; } // Ej: DPI, Contrato, etc.
         public  required string RutaArchivo { get; set; }
         public DateTime? FechaEntrega { get; set; }

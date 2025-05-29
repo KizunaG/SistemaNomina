@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NominaSystem.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using NominaSystem.Infrastructure.Data;
 namespace NominaSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250527041755_InicialCreacion")]
+    partial class InicialCreacion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,7 +175,7 @@ namespace NominaSystem.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("DescuentoId")
+                    b.Property<int?>("DescuentoId")
                         .HasColumnType("int");
 
                     b.Property<int>("ID_Descuento")
@@ -184,7 +187,7 @@ namespace NominaSystem.Infrastructure.Migrations
                     b.Property<decimal>("Monto")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("NominaId")
+                    b.Property<int?>("NominaId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -209,6 +212,10 @@ namespace NominaSystem.Infrastructure.Migrations
 
                     b.Property<int>("ID_Empleado")
                         .HasColumnType("int");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RutaArchivo")
                         .IsRequired()
@@ -277,17 +284,46 @@ namespace NominaSystem.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Correo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Direccion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Dpi")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("EstadoExpediente")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EstadoLaboral")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("FechaIngreso")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("ID_Empleado")
                         .HasColumnType("int");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UltimaValidacion")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ID_Empleado");
 
                     b.ToTable("ExpedientesEmpleado");
                 });
@@ -302,6 +338,9 @@ namespace NominaSystem.Infrastructure.Migrations
 
                     b.Property<DateTime?>("FechaGraduacion")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("GradoAcademico")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ID_Empleado")
                         .HasColumnType("int");
@@ -411,19 +450,26 @@ namespace NominaSystem.Infrastructure.Migrations
                 {
                     b.HasOne("NominaSystem.Domain.Entities.DescuentoLegal", "Descuento")
                         .WithMany()
-                        .HasForeignKey("DescuentoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DescuentoId");
 
                     b.HasOne("NominaSystem.Domain.Entities.Nomina", "Nomina")
                         .WithMany()
-                        .HasForeignKey("NominaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("NominaId");
 
                     b.Navigation("Descuento");
 
                     b.Navigation("Nomina");
+                });
+
+            modelBuilder.Entity("NominaSystem.Domain.Entities.ExpedienteEmpleado", b =>
+                {
+                    b.HasOne("NominaSystem.Domain.Entities.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("ID_Empleado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Empleado");
                 });
 
             modelBuilder.Entity("NominaSystem.Domain.Entities.Nomina", b =>

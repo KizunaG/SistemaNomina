@@ -1,25 +1,41 @@
-using NominaSystem.UI.Services.Interfaces;
+﻿using NominaSystem.UI.Services.Interfaces;
 using NominaSystem.UI.Services;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.AspNetCore.Components.Server;
+using Blazored.LocalStorage;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Blazor y páginas
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddScoped<ProtectedLocalStorage>();
 
-builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+// HttpClient apuntando al backend correcto (puerto 7122 del WebAPI)
+builder.Services.AddScoped(sp =>
 {
-    client.BaseAddress = new Uri("https://localhost:7122/"); // Usa el puerto del backend
+    var client = new HttpClient
+    {
+        BaseAddress = new Uri("https://localhost:7122/") //backend API
+    };
+    return client;
 });
 
-builder.Services.AddScoped<ProtectedLocalStorage>();
+// Servicios inyectables
+builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
+
+
+// Componentes interactivos
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+// Mostrar errores de circuito
+builder.Services.Configure<CircuitOptions>(options =>
+{
+    options.DetailedErrors = true;
+});
 
 var app = builder.Build();
-
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");

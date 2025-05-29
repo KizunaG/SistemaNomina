@@ -1,0 +1,144 @@
+﻿@page "/empleados/expediente/{id:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject IJSRuntime JS
+@using NominaSystem.UI.Models
+@using System.Net.Http.Json
+
+<button class="btn btn-outline-primary mb-3" @onclick="DescargarPdf">
+    📄 Descargar Expediente en PDF
+</button>
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private EmpleadoDto? empleado;
+    private List<DocumentoDto> documentos = new();
+    private List<InformacionAcademicaDto> historialAcademico = new();
+
+    private async Task DescargarPdf()
+    {
+        try
+        {
+            var token = await LocalStorage.GetItemAsync<string>("authToken");
+            Http.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var stream = await Http.GetStreamAsync($"api/Reporte/expediente/{id}");
+
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            var bytes = memoryStream.ToArray();
+            var base64 = Convert.ToBase64String(bytes);
+
+            await JS.InvokeVoidAsync("downloadFileFromBytes", base64, $"expediente_empleado_{id}.pdf");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al descargar el PDF: {ex.Message}");
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        try
+        {
+            empleado = await Http.GetFromJsonAsync<EmpleadoDto>($"api/Empleados/{id}");
+
+            // 🔧 Estas rutas son las que deberían usarse si el backend lo implementaste así:
+            documentos = await Http.GetFromJsonAsync<List<DocumentoDto>>($"api/DocumentoEmpleado/por-empleado/{id}");
+            historialAcademico = await Http.GetFromJsonAsync<List<InformacionAcademicaDto>>($"api/InformacionAcademica/por-empleado/{id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al cargar datos del expediente: {ex.Message}");
+        }
+    }
+
+}
+
+<h3>Expediente del Empleado</h3>
+
+@if (empleado == null)
+{
+    <p><em>Cargando datos del empleado...</em></p>
+}
+else
+{
+    <div class="card p-3 mb-3">
+        <h5>@empleado.Nombre (@empleado.Dpi)</h5>
+        <p><strong>Teléfono:</strong> @empleado.Telefono</p>
+        <p><strong>Dirección:</strong> @empleado.Direccion</p>
+        <p><strong>Estado Laboral:</strong> @empleado.EstadoLaboral</p>
+        <p><strong>Fecha de Ingreso:</strong> @empleado.FechaIngreso.ToShortDateString()</p>
+        <p><strong>Cargo:</strong> @empleado.CargoNombre</p>
+        <p><strong>Departamento:</strong> @empleado.DepartamentoNombre</p>
+    </div>
+
+    <h5>📄 Documentos</h5>
+    @if (documentos.Count == 0)
+    {
+        <p><em>No hay documentos registrados.</em></p>
+    }
+    else
+    {
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Ruta</th>
+                    <th>Fecha de Entrega</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var doc in documentos)
+                {
+                    <tr>
+                        <td>@doc.Nombre</td>
+                        <td>@doc.TipoDocumento</td>
+                        <td>@doc.RutaArchivo</td>
+                        <td>@(doc.FechaEntrega?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <h5>🎓 Historial Académico</h5>
+    @if (historialAcademico.Count == 0)
+    {
+        <p><em>No hay información académica registrada.</em></p>
+    }
+    else
+    {
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Institución</th>
+                    <th>Fecha de Graduación</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in historialAcademico)
+                {
+                    <tr>
+                        <td>@item.Titulo</td>
+                        <td>@item.Institucion</td>
+                        <td>@(item.FechaGraduacion?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+

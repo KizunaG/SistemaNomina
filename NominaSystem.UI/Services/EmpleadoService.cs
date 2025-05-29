@@ -22,4 +22,14 @@ public class EmpleadoService : IEmpleadoService
         var empleados = await _http.GetFromJsonAsync<List<EmpleadoDto>>("api/Empleado");
         return empleados ?? new List<EmpleadoDto>();
     }
+    public async Task<bool> ValidarExpediente(int empleadoId)
+    {
+        var response = await _http.GetAsync($"api/ExpedienteEmpleado/validar/{empleadoId}");
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            return bool.Parse(json);
+        }
+        return false;
+    }
 }
