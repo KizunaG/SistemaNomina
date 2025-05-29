@@ -7,9 +7,10 @@ public interface IEmpleadoService
 {
     Task<List<EmpleadoDto>> GetAllAsync();
     Task<EmpleadoDto?> GetByIdAsync(int id);
-    Task AddAsync(EmpleadoDto empleadoDto);   // Cambiado a EmpleadoDto
-    Task UpdateAsync(EmpleadoDto empleadoDto); // Cambiado a EmpleadoDto
+    Task<EmpleadoDto> AddAsync(EmpleadoDto empleadoDto);   // Cambiado para devolver EmpleadoDto con Id asignado
+    Task UpdateAsync(EmpleadoDto empleadoDto);
     Task DeleteAsync(int id);
 }
+
 
 

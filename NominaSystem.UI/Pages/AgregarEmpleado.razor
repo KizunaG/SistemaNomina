@@ -9,7 +9,6 @@
     <DataAnnotationsValidator />
 
     <div class="accordion" id="formAccordion">
-
         <!-- Sección: Datos Generales -->
         <div class="accordion-item">
             <h2 class="accordion-header" id="headingGenerales">
@@ -23,13 +22,11 @@
                     <div class="mb-3">
                         <label>Nombre:</label>
                         <InputText class="form-control" @bind-Value="nuevoEmpleado.Nombre" />
-                        <ValidationMessage For="@(() => nuevoEmpleado.Nombre)" />
                     </div>
 
                     <div class="mb-3">
                         <label>DPI:</label>
                         <InputText class="form-control" @bind-Value="nuevoEmpleado.Dpi" />
-                        <ValidationMessage For="@(() => nuevoEmpleado.Dpi)" />
                     </div>
 
                     <div class="mb-3">
@@ -158,6 +155,7 @@
     </div>
 </EditForm>
 
+
 @code {
     private Empleado nuevoEmpleado = new();
     private DocumentoDto nuevoDocumento = new();
@@ -174,20 +172,45 @@
 
     private async Task GuardarEmpleado()
     {
-        var response = await Http.PostAsJsonAsync("api/Empleados", nuevoEmpleado);
-        var creado = await response.Content.ReadFromJsonAsync<Empleado>();
-
-        if (creado != null)
+        try
         {
-            nuevoDocumento.ID_Empleado = creado.Id;
-            await Http.PostAsJsonAsync("api/DocumentoEmpleado", nuevoDocumento);
+            Console.WriteLine("Iniciando GuardarEmpleado");
 
-            nuevoAcademico.ID_Empleado = creado.Id;
-            await Http.PostAsJsonAsync("api/InformacionAcademica", nuevoAcademico);
+            var response = await Http.PostAsJsonAsync("api/Empleados", nuevoEmpleado);
+
+            Console.WriteLine($"Response status: {response.StatusCode}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Error al guardar empleado: {response.StatusCode}");
+                return;
+            }
+
+            var creado = await response.Content.ReadFromJsonAsync<Empleado>();
+
+            Console.WriteLine($"Empleado creado con Id: {creado?.Id}");
+
+            if (creado != null)
+            {
+                nuevoDocumento.ID_Empleado = creado.Id;
+                var responseDoc = await Http.PostAsJsonAsync("api/DocumentoEmpleado", nuevoDocumento);
+                Console.WriteLine($"Response documento status: {responseDoc.StatusCode}");
+
+                nuevoAcademico.ID_Empleado = creado.Id;
+                var responseAcad = await Http.PostAsJsonAsync("api/InformacionAcademica", nuevoAcademico);
+                Console.WriteLine($"Response academico status: {responseAcad.StatusCode}");
+            }
+
+            Navigation.NavigateTo("/empleados");
+            Console.WriteLine("Navegando a /empleados");
         }
-
-        Navigation.NavigateTo("/empleados");
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Excepción al guardar empleado: {ex.Message}");
+        }
     }
+
+
 
     private void Cancelar() => Navigation.NavigateTo("/empleados");
 
@@ -234,6 +257,7 @@
         public string NombreDepartamento { get; set; } = string.Empty;
     }
 }
+
 
 
 

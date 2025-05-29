@@ -56,14 +56,10 @@ public class EmpleadosController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] EmpleadoDto empleadoDto)
     {
-        // Pasa el DTO directamente al servicio que se encargará de crear la entidad y mapear cargos/departamentos
-        await _service.AddAsync(empleadoDto);
-
-        // Para devolver un CreatedAtAction válido, obtén el empleado recién creado
-        var empleadoCreado = await _service.GetByIdAsync(empleadoDto.Id);
-
-        return CreatedAtAction(nameof(GetById), new { id = empleadoCreado?.Id }, empleadoCreado);
+        var empleadoCreado = await _service.AddAsync(empleadoDto);
+        return CreatedAtAction(nameof(GetById), new { id = empleadoCreado.Id }, empleadoCreado);
     }
+
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] EmpleadoDto empleadoDto)

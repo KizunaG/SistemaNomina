@@ -30,7 +30,9 @@ public class EmpleadoService : IEmpleadoService
                 Direccion = e.Direccion,
                 FechaIngreso = e.FechaIngreso ?? default,
                 NombreCargo = e.Cargo != null ? e.Cargo.NombreCargo : "",
-                NombreDepartamento = e.Departamento != null ? e.Departamento.NombreDepartamento : ""
+                NombreDepartamento = e.Departamento != null ? e.Departamento.NombreDepartamento : "",
+                Id_Cargo = e.ID_Cargo,
+                Id_Departamento = e.ID_Departamento
             })
             .ToListAsync();
     }
@@ -51,31 +53,28 @@ public class EmpleadoService : IEmpleadoService
                 Direccion = e.Direccion,
                 FechaIngreso = e.FechaIngreso ?? default,
                 NombreCargo = e.Cargo != null ? e.Cargo.NombreCargo : "",
-                NombreDepartamento = e.Departamento != null ? e.Departamento.NombreDepartamento : ""
+                NombreDepartamento = e.Departamento != null ? e.Departamento.NombreDepartamento : "",
+                Id_Cargo = e.ID_Cargo,
+                Id_Departamento = e.ID_Departamento
             })
             .FirstOrDefaultAsync();
 
         return empleado;
     }
 
-    public async Task AddAsync(EmpleadoDto empleadoDto)
+    public async Task<EmpleadoDto> AddAsync(EmpleadoDto empleadoDto)
     {
-        // Buscar o crear Cargo
-        var cargo = await _context.Cargos.FirstOrDefaultAsync(c => c.NombreCargo == empleadoDto.NombreCargo);
-        if (cargo == null && !string.IsNullOrWhiteSpace(empleadoDto.NombreCargo))
+        // Validar que los Ids existan si son diferentes de null
+        if (empleadoDto.Id_Cargo.HasValue)
         {
-            cargo = new Cargo { NombreCargo = empleadoDto.NombreCargo };
-            _context.Cargos.Add(cargo);
-            await _context.SaveChangesAsync();
+            var cargo = await _context.Cargos.FirstOrDefaultAsync(c => c.Id == empleadoDto.Id_Cargo.Value);
+            if (cargo == null) throw new Exception("El Cargo seleccionado no existe.");
         }
 
-        // Buscar o crear Departamento
-        var departamento = await _context.Departamentos.FirstOrDefaultAsync(d => d.NombreDepartamento == empleadoDto.NombreDepartamento);
-        if (departamento == null && !string.IsNullOrWhiteSpace(empleadoDto.NombreDepartamento))
+        if (empleadoDto.Id_Departamento.HasValue)
         {
-            departamento = new Departamento { NombreDepartamento = empleadoDto.NombreDepartamento };
-            _context.Departamentos.Add(departamento);
-            await _context.SaveChangesAsync();
+            var departamento = await _context.Departamentos.FirstOrDefaultAsync(d => d.Id == empleadoDto.Id_Departamento.Value);
+            if (departamento == null) throw new Exception("El Departamento seleccionado no existe.");
         }
 
         var empleado = new Empleado
@@ -86,12 +85,17 @@ public class EmpleadoService : IEmpleadoService
             EstadoLaboral = empleadoDto.EstadoLaboral,
             Direccion = empleadoDto.Direccion,
             FechaIngreso = empleadoDto.FechaIngreso,
-            ID_Cargo = cargo?.Id,
-            ID_Departamento = departamento?.Id
+            ID_Cargo = empleadoDto.Id_Cargo,
+            ID_Departamento = empleadoDto.Id_Departamento
         };
 
         _context.Empleados.Add(empleado);
         await _context.SaveChangesAsync();
+
+        // Asignar el Id generado al DTO
+        empleadoDto.Id = empleado.Id;
+
+        return empleadoDto;
     }
 
     public async Task UpdateAsync(EmpleadoDto empleadoDto)
@@ -99,22 +103,28 @@ public class EmpleadoService : IEmpleadoService
         var empleado = await _context.Empleados.FindAsync(empleadoDto.Id);
         if (empleado == null) throw new KeyNotFoundException($"Empleado con Id {empleadoDto.Id} no encontrado.");
 
-        // Buscar o crear Cargo
-        var cargo = await _context.Cargos.FirstOrDefaultAsync(c => c.NombreCargo == empleadoDto.NombreCargo);
-        if (cargo == null && !string.IsNullOrWhiteSpace(empleadoDto.NombreCargo))
+        // Buscar Cargo si Id_Cargo tiene valor
+        if (empleadoDto.Id_Cargo.HasValue)
         {
-            cargo = new Cargo { NombreCargo = empleadoDto.NombreCargo };
-            _context.Cargos.Add(cargo);
-            await _context.SaveChangesAsync();
+            var cargo = await _context.Cargos.FindAsync(empleadoDto.Id_Cargo.Value);
+            if (cargo == null) throw new Exception("El Cargo seleccionado no existe.");
+            empleado.ID_Cargo = cargo.Id;
+        }
+        else
+        {
+            empleado.ID_Cargo = null;
         }
 
-        // Buscar o crear Departamento
-        var departamento = await _context.Departamentos.FirstOrDefaultAsync(d => d.NombreDepartamento == empleadoDto.NombreDepartamento);
-        if (departamento == null && !string.IsNullOrWhiteSpace(empleadoDto.NombreDepartamento))
+        // Buscar Departamento si Id_Departamento tiene valor
+        if (empleadoDto.Id_Departamento.HasValue)
         {
-            departamento = new Departamento { NombreDepartamento = empleadoDto.NombreDepartamento };
-            _context.Departamentos.Add(departamento);
-            await _context.SaveChangesAsync();
+            var departamento = await _context.Departamentos.FindAsync(empleadoDto.Id_Departamento.Value);
+            if (departamento == null) throw new Exception("El Departamento seleccionado no existe.");
+            empleado.ID_Departamento = departamento.Id;
+        }
+        else
+        {
+            empleado.ID_Departamento = null;
         }
 
         empleado.Nombre = empleadoDto.Nombre;
@@ -123,8 +133,6 @@ public class EmpleadoService : IEmpleadoService
         empleado.EstadoLaboral = empleadoDto.EstadoLaboral;
         empleado.Direccion = empleadoDto.Direccion;
         empleado.FechaIngreso = empleadoDto.FechaIngreso;
-        empleado.ID_Cargo = cargo?.Id;
-        empleado.ID_Departamento = departamento?.Id;
 
         _context.Empleados.Update(empleado);
         await _context.SaveChangesAsync();
@@ -140,4 +148,5 @@ public class EmpleadoService : IEmpleadoService
         }
     }
 }
+
 

@@ -10,6 +10,9 @@ public class EmpleadoDto
     public string EstadoLaboral { get; set; } = string.Empty;
     public string Direccion { get; set; } = "";
     public DateTime FechaIngreso { get; set; }
+
+    public int? Id_Cargo { get; set; }  // ID del Cargo
+    public int? Id_Departamento { get; set; }  // ID del Departamento
     public string? NombreCargo { get; set; } = "";  // ← nombre del cargo
     public string? NombreDepartamento { get; set; } = ""; // ← nombre del departamento
 
