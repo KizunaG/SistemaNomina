@@ -11,7 +11,6 @@ namespace NominaSystem.Domain.Entities
         public int Id { get; set; }
         public int ID_Empleado { get; set; }
         public required string Titulo { get; set; }
-        public string? GradoAcademico { get; set; }
         public string? Institucion { get; set; }
         public DateTime? FechaGraduacion { get; set; }
     }
