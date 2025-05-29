@@ -12,5 +12,4 @@ public class EmpleadoDto
     public DateTime FechaIngreso { get; set; }
     public string? CargoNombre { get; set; }  // ← nombre del cargo
     public string? DepartamentoNombre { get; set; } // ← nombre del departamento
-
 }
