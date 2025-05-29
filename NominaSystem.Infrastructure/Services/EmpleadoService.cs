@@ -1,8 +1,8 @@
-﻿using NominaSystem.Domain.Entities;
+﻿using NominaSystem.Application.DTOs;
 using NominaSystem.Application.Interfaces;
+using NominaSystem.Domain.Entities;
 using NominaSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using NominaSystem.Application.DTOs;
 
 namespace NominaSystem.Infrastructure.Services;
 
@@ -35,93 +35,97 @@ public class EmpleadoService : IEmpleadoService
             .ToListAsync();
     }
 
-    public async Task<Empleado?> GetByIdAsync(int id)
+    public async Task<EmpleadoDto?> GetByIdAsync(int id)
     {
-        return await _context.Empleados.FindAsync(id);
+        var empleado = await _context.Empleados
+            .Include(e => e.Cargo)
+            .Include(e => e.Departamento)
+            .Where(e => e.Id == id)
+            .Select(e => new EmpleadoDto
+            {
+                Id = e.Id,
+                Nombre = e.Nombre,
+                Dpi = e.DPI,
+                Telefono = e.Telefono,
+                EstadoLaboral = e.EstadoLaboral,
+                Direccion = e.Direccion,
+                FechaIngreso = e.FechaIngreso ?? default,
+                NombreCargo = e.Cargo != null ? e.Cargo.NombreCargo : "",
+                NombreDepartamento = e.Departamento != null ? e.Departamento.NombreDepartamento : ""
+            })
+            .FirstOrDefaultAsync();
+
+        return empleado;
     }
 
-    public async Task AddAsync(Empleado empleado)
+    public async Task AddAsync(EmpleadoDto empleadoDto)
     {
-        // Buscar o crear Cargo por nombre
-        Cargo? cargo = null;
-        if (!string.IsNullOrWhiteSpace(empleado.NombreCargo))
+        // Buscar o crear Cargo
+        var cargo = await _context.Cargos.FirstOrDefaultAsync(c => c.NombreCargo == empleadoDto.NombreCargo);
+        if (cargo == null && !string.IsNullOrWhiteSpace(empleadoDto.NombreCargo))
         {
-            cargo = await _context.Cargos.FirstOrDefaultAsync(c => c.NombreCargo == empleado.NombreCargo);
-            if (cargo == null)
-            {
-                cargo = new Cargo { NombreCargo = empleado.NombreCargo };
-                _context.Cargos.Add(cargo);
-                await _context.SaveChangesAsync();
-            }
+            cargo = new Cargo { NombreCargo = empleadoDto.NombreCargo };
+            _context.Cargos.Add(cargo);
+            await _context.SaveChangesAsync();
         }
 
-        // Buscar o crear Departamento por nombre
-        Departamento? departamento = null;
-        if (!string.IsNullOrWhiteSpace(empleado.NombreDepartamento))
+        // Buscar o crear Departamento
+        var departamento = await _context.Departamentos.FirstOrDefaultAsync(d => d.NombreDepartamento == empleadoDto.NombreDepartamento);
+        if (departamento == null && !string.IsNullOrWhiteSpace(empleadoDto.NombreDepartamento))
         {
-            departamento = await _context.Departamentos.FirstOrDefaultAsync(d => d.NombreDepartamento == empleado.NombreDepartamento);
-            if (departamento == null)
-            {
-                departamento = new Departamento { NombreDepartamento = empleado.NombreDepartamento };
-                _context.Departamentos.Add(departamento);
-                await _context.SaveChangesAsync();
-            }
+            departamento = new Departamento { NombreDepartamento = empleadoDto.NombreDepartamento };
+            _context.Departamentos.Add(departamento);
+            await _context.SaveChangesAsync();
         }
 
-        // Asignar IDs al empleado
-        empleado.ID_Cargo = cargo?.Id;
-        empleado.ID_Departamento = departamento?.Id;
-
-        // Limpiar propiedades de navegación para evitar problemas al insertar
-        empleado.Cargo = null;
-        empleado.Departamento = null;
+        var empleado = new Empleado
+        {
+            Nombre = empleadoDto.Nombre,
+            DPI = empleadoDto.Dpi,
+            Telefono = empleadoDto.Telefono,
+            EstadoLaboral = empleadoDto.EstadoLaboral,
+            Direccion = empleadoDto.Direccion,
+            FechaIngreso = empleadoDto.FechaIngreso,
+            ID_Cargo = cargo?.Id,
+            ID_Departamento = departamento?.Id
+        };
 
         _context.Empleados.Add(empleado);
         await _context.SaveChangesAsync();
-
-        // Validar expediente después de insertar y tener ID
-        empleado.ExpedienteCompleto = await ValidarExpedienteCompleto(empleado.Id);
-        _context.Empleados.Update(empleado);
-        await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Empleado empleado)
+    public async Task UpdateAsync(EmpleadoDto empleadoDto)
     {
-        // Buscar o crear Cargo por nombre
-        Cargo? cargo = null;
-        if (!string.IsNullOrWhiteSpace(empleado.NombreCargo))
+        var empleado = await _context.Empleados.FindAsync(empleadoDto.Id);
+        if (empleado == null) throw new KeyNotFoundException($"Empleado con Id {empleadoDto.Id} no encontrado.");
+
+        // Buscar o crear Cargo
+        var cargo = await _context.Cargos.FirstOrDefaultAsync(c => c.NombreCargo == empleadoDto.NombreCargo);
+        if (cargo == null && !string.IsNullOrWhiteSpace(empleadoDto.NombreCargo))
         {
-            cargo = await _context.Cargos.FirstOrDefaultAsync(c => c.NombreCargo == empleado.NombreCargo);
-            if (cargo == null)
-            {
-                cargo = new Cargo { NombreCargo = empleado.NombreCargo };
-                _context.Cargos.Add(cargo);
-                await _context.SaveChangesAsync();
-            }
+            cargo = new Cargo { NombreCargo = empleadoDto.NombreCargo };
+            _context.Cargos.Add(cargo);
+            await _context.SaveChangesAsync();
         }
 
-        // Buscar o crear Departamento por nombre
-        Departamento? departamento = null;
-        if (!string.IsNullOrWhiteSpace(empleado.NombreDepartamento))
+        // Buscar o crear Departamento
+        var departamento = await _context.Departamentos.FirstOrDefaultAsync(d => d.NombreDepartamento == empleadoDto.NombreDepartamento);
+        if (departamento == null && !string.IsNullOrWhiteSpace(empleadoDto.NombreDepartamento))
         {
-            departamento = await _context.Departamentos.FirstOrDefaultAsync(d => d.NombreDepartamento == empleado.NombreDepartamento);
-            if (departamento == null)
-            {
-                departamento = new Departamento { NombreDepartamento = empleado.NombreDepartamento };
-                _context.Departamentos.Add(departamento);
-                await _context.SaveChangesAsync();
-            }
+            departamento = new Departamento { NombreDepartamento = empleadoDto.NombreDepartamento };
+            _context.Departamentos.Add(departamento);
+            await _context.SaveChangesAsync();
         }
 
-        // Asignar IDs al empleado
+        empleado.Nombre = empleadoDto.Nombre;
+        empleado.DPI = empleadoDto.Dpi;
+        empleado.Telefono = empleadoDto.Telefono;
+        empleado.EstadoLaboral = empleadoDto.EstadoLaboral;
+        empleado.Direccion = empleadoDto.Direccion;
+        empleado.FechaIngreso = empleadoDto.FechaIngreso;
         empleado.ID_Cargo = cargo?.Id;
         empleado.ID_Departamento = departamento?.Id;
 
-        // Limpiar propiedades de navegación para evitar problemas al actualizar
-        empleado.Cargo = null;
-        empleado.Departamento = null;
-
-        empleado.ExpedienteCompleto = await ValidarExpedienteCompleto(empleado.Id);
         _context.Empleados.Update(empleado);
         await _context.SaveChangesAsync();
     }
@@ -134,22 +138,6 @@ public class EmpleadoService : IEmpleadoService
             _context.Empleados.Remove(empleado);
             await _context.SaveChangesAsync();
         }
-    }
-
-    // Método privado para validar expediente completo
-    private async Task<bool> ValidarExpedienteCompleto(int empleadoId)
-    {
-        var documentosRequeridos = await _context.ConfiguracionExpedientes
-            .Where(c => c.Obligatorio && c.TipoDocumento != null)
-            .Select(c => c.TipoDocumento!)
-            .ToListAsync();
-
-        var documentosEmpleado = await _context.DocumentosEmpleado
-            .Where(d => d.ID_Empleado == empleadoId && d.TipoDocumento != null)
-            .Select(d => d.TipoDocumento!)
-            .ToListAsync();
-
-        return documentosRequeridos.All(doc => documentosEmpleado.Contains(doc));
     }
 }
 

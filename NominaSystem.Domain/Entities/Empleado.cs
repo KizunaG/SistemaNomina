@@ -25,10 +25,4 @@ public class Empleado
     public Cargo? Cargo { get; set; }
     public Departamento? Departamento { get; set; }
 
-    // Los nombres para recibir desde frontend
-    [NotMapped]
-    public string NombreCargo { get; set; } = "";
-    [NotMapped]
-    public string NombreDepartamento { get; set; } = "";
-
 }

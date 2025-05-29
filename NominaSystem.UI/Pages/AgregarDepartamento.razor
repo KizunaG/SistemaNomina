@@ -1,0 +1,52 @@
+﻿@page "/departamentos/agregar"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using System.ComponentModel.DataAnnotations
+
+<h3>Agregar Departamento</h3>
+
+<EditForm Model="nuevoDepartamento" OnValidSubmit="GuardarDepartamento">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label>Nombre Departamento:</label>
+        <InputText class="form-control" @bind-Value="nuevoDepartamento.NombreDepartamento" />
+        <ValidationMessage For="@(() => nuevoDepartamento.NombreDepartamento)" />
+    </div>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+    </div>
+</EditForm>
+
+@code {
+    private Departamento nuevoDepartamento = new();
+
+    private async Task GuardarDepartamento()
+    {
+        var response = await Http.PostAsJsonAsync("api/Departamentos", nuevoDepartamento);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/departamentos");
+        }
+        else
+        {
+            // Manejar errores, si quieres
+            Console.WriteLine("Error al guardar departamento");
+        }
+    }
+
+    private void Cancelar()
+    {
+        Navigation.NavigateTo("/departamentos");
+    }
+
+    public class Departamento
+    {
+        public int Id { get; set; }
+        [Required(ErrorMessage = "El nombre del departamento es obligatorio")]
+        public string NombreDepartamento { get; set; } = string.Empty;
+    }
+}
+

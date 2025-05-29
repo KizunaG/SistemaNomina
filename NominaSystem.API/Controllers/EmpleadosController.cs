@@ -2,8 +2,6 @@
 using NominaSystem.Application.Interfaces;
 using NominaSystem.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
-using NominaSystem.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 using NominaSystem.Application.DTOs;
 
 namespace NominaSystem.API.Controllers;
@@ -14,139 +12,66 @@ namespace NominaSystem.API.Controllers;
 public class EmpleadosController : ControllerBase
 {
     private readonly IEmpleadoService _service;
-    private readonly ApplicationDbContext _context;
 
-    public EmpleadosController(IEmpleadoService service, ApplicationDbContext context)
+    public EmpleadosController(IEmpleadoService service)
     {
         _service = service;
-        _context = context;
     }
 
     [HttpGet("filtrar")]
     public async Task<IActionResult> Filtrar([FromQuery] string? busqueda, [FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 10)
     {
-        var query = _context.Empleados.AsQueryable();
+        var empleados = await _service.GetAllAsync();
 
-        if (!string.IsNullOrWhiteSpace(busqueda))
-        {
-            query = query.Where(e => e.Nombre.Contains(busqueda) || e.DPI.Contains(busqueda));
-        }
+        var filtered = empleados.Where(e =>
+            string.IsNullOrWhiteSpace(busqueda) ||
+            e.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+            e.Dpi.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
 
-        var totalRegistros = await query.CountAsync();
+        var total = filtered.Count();
 
-        var empleados = await query
+        var paged = filtered
             .Skip((pagina - 1) * tamanoPagina)
             .Take(tamanoPagina)
-            .ToListAsync();
+            .ToList();
 
-        return Ok(new
-        {
-            Datos = empleados,
-            Total = totalRegistros
-        });
+        return Ok(new { Datos = paged, Total = total });
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var empleados = await _context.Empleados
-            .Include(e => e.Cargo)         // Incluye la relación con Cargo
-            .Include(e => e.Departamento)  // Incluye la relación con Departamento
-            .Select(e => new EmpleadoDto
-            {
-                Id = e.Id,
-                Nombre = e.Nombre,
-                Dpi = e.DPI,
-                Telefono = e.Telefono,
-                EstadoLaboral = e.EstadoLaboral,
-                Direccion = e.Direccion,
-                FechaIngreso = e.FechaIngreso ?? DateTime.MinValue,
-                NombreCargo = e.Cargo != null ? e.Cargo.NombreCargo : "",  // Acceder al nombre de Cargo
-                NombreDepartamento = e.Departamento != null ? e.Departamento.NombreDepartamento : ""  // Acceder al nombre de Departamento
-            })
-            .ToListAsync();
-
-        return Ok(empleados);
+        var empleadosDto = await _service.GetAllAsync();
+        return Ok(empleadosDto);
     }
-
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var empleado = await _context.Empleados
-            .Include(e => e.Cargo)
-            .Include(e => e.Departamento)
-            .Where(e => e.Id == id)
-            .Select(e => new EmpleadoDto
-            {
-                Id = e.Id,
-                Nombre = e.Nombre,
-                Dpi = e.DPI,
-                Telefono = e.Telefono,
-                EstadoLaboral = e.EstadoLaboral,
-                Direccion = e.Direccion,
-                FechaIngreso = e.FechaIngreso ?? default,
-                NombreCargo = e.Cargo != null ? e.Cargo.NombreCargo : "",
-                NombreDepartamento = e.Departamento != null ? e.Departamento.NombreDepartamento : ""
-            })
-            .FirstOrDefaultAsync();
-
+        var empleado = await _service.GetByIdAsync(id);
         if (empleado == null) return NotFound();
-
         return Ok(empleado);
     }
-
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] EmpleadoDto empleadoDto)
     {
-        // Buscar o crear Cargo
-        var cargo = await _context.Cargos
-            .FirstOrDefaultAsync(c => c.NombreCargo == empleadoDto.NombreCargo);
+        // Pasa el DTO directamente al servicio que se encargará de crear la entidad y mapear cargos/departamentos
+        await _service.AddAsync(empleadoDto);
 
-        if (cargo == null)
-        {
-            cargo = new Cargo { NombreCargo = empleadoDto.NombreCargo };
-            _context.Cargos.Add(cargo);
-            await _context.SaveChangesAsync();
-        }
+        // Para devolver un CreatedAtAction válido, obtén el empleado recién creado
+        var empleadoCreado = await _service.GetByIdAsync(empleadoDto.Id);
 
-        // Buscar o crear Departamento
-        var departamento = await _context.Departamentos
-            .FirstOrDefaultAsync(d => d.NombreDepartamento == empleadoDto.NombreDepartamento);
-
-        if (departamento == null)
-        {
-            departamento = new Departamento { NombreDepartamento = empleadoDto.NombreDepartamento };
-            _context.Departamentos.Add(departamento);
-            await _context.SaveChangesAsync();
-        }
-
-        // Crear el empleado usando los IDs de cargo y departamento
-        var empleado = new Empleado
-        {
-            Nombre = empleadoDto.Nombre,
-            DPI = empleadoDto.Dpi,
-            Telefono = empleadoDto.Telefono,
-            EstadoLaboral = empleadoDto.EstadoLaboral,
-            Direccion = empleadoDto.Direccion,
-            FechaIngreso = empleadoDto.FechaIngreso,
-            ID_Cargo = cargo.Id,
-            ID_Departamento = departamento.Id
-        };
-
-        _context.Empleados.Add(empleado);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetById), new { id = empleado.Id }, empleado);
+        return CreatedAtAction(nameof(GetById), new { id = empleadoCreado?.Id }, empleadoCreado);
     }
 
-
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] Empleado empleado)
+    public async Task<IActionResult> Update(int id, [FromBody] EmpleadoDto empleadoDto)
     {
-        if (id != empleado.Id) return BadRequest("ID no coincide");
-        await _service.UpdateAsync(empleado);
+        if (id != empleadoDto.Id) return BadRequest("ID no coincide");
+
+        await _service.UpdateAsync(empleadoDto);
+
         return NoContent();
     }
 
@@ -157,3 +82,6 @@ public class EmpleadosController : ControllerBase
         return NoContent();
     }
 }
+
+
+

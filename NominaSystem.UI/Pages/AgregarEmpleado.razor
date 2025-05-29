@@ -58,14 +58,25 @@
 
                     <div class="mb-3">
                         <label>Cargo:</label>
-                        <InputText class="form-control" @bind-Value="nuevoEmpleado.NombreCargo" />
+                        <InputSelect class="form-control" @bind-Value="nuevoEmpleado.Id_Cargo">
+                            <option value="">-- Seleccione Cargo --</option>
+                            @foreach (var c in cargos)
+                            {
+                                <option value="@c.Id">@c.NombreCargo</option>
+                            }
+                        </InputSelect>
                     </div>
 
                     <div class="mb-3">
                         <label>Departamento:</label>
-                        <InputText class="form-control" @bind-Value="nuevoEmpleado.NombreDepartamento" />
+                        <InputSelect class="form-control" @bind-Value="nuevoEmpleado.Id_Departamento">
+                            <option value="">-- Seleccione Departamento --</option>
+                            @foreach (var d in departamentos)
+                            {
+                                <option value="@d.Id">@d.NombreDepartamento</option>
+                            }
+                        </InputSelect>
                     </div>
-
 
                 </div>
             </div>
@@ -152,6 +163,15 @@
     private DocumentoDto nuevoDocumento = new();
     private InformacionAcademicaDto nuevoAcademico = new();
 
+    private List<Cargo> cargos = new();
+    private List<Departamento> departamentos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        cargos = await Http.GetFromJsonAsync<List<Cargo>>("api/Cargos");
+        departamentos = await Http.GetFromJsonAsync<List<Departamento>>("api/Departamentos");
+    }
+
     private async Task GuardarEmpleado()
     {
         var response = await Http.PostAsJsonAsync("api/Empleados", nuevoEmpleado);
@@ -180,8 +200,8 @@
         [Required] public string EstadoLaboral { get; set; } = string.Empty;
         [Required] public string Direccion { get; set; } = string.Empty;
         [Required] public DateTime FechaIngreso { get; set; } = DateTime.Today;
-        [Required] public string NombreCargo { get; set; } = string.Empty;
-        [Required] public string NombreDepartamento { get; set; } = string.Empty;
+        public int? Id_Cargo { get; set; }
+        public int? Id_Departamento { get; set; }
     }
 
     public class DocumentoDto
@@ -201,5 +221,20 @@
         public string Institucion { get; set; } = string.Empty;
         public DateTime? FechaGraduacion { get; set; }
     }
+
+    public class Cargo
+    {
+        public int Id { get; set; }
+        public string NombreCargo { get; set; } = string.Empty;
+    }
+
+    public class Departamento
+    {
+        public int Id { get; set; }
+        public string NombreDepartamento { get; set; } = string.Empty;
+    }
 }
+
+
+
 
