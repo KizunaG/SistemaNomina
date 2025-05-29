@@ -9,15 +9,8 @@ namespace NominaSystem.Domain.Entities
     public class DetalleDescuentoNomina
     {
         public int Id { get; set; }
-
         public int ID_Nomina { get; set; }
         public int ID_Descuento { get; set; }
         public decimal Monto { get; set; }
-
-        // ✅ Deben ser opcionales y sin validación requerida
-        public Nomina? Nomina { get; set; }
-        public DescuentoLegal? Descuento { get; set; }
     }
-
-
 }

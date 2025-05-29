@@ -3,51 +3,42 @@ using NominaSystem.Domain.Entities;
 using NominaSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace NominaSystem.Infrastructure.Services
+namespace NominaSystem.Infrastructure.Services;
+
+public class InformacionAcademicaService : IInformacionAcademicaService
 {
-    public class InformacionAcademicaService : IInformacionAcademicaService
+    private readonly ApplicationDbContext _context;
+
+    public InformacionAcademicaService(ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public InformacionAcademicaService(ApplicationDbContext context)
+    public async Task<List<InformacionAcademica>> GetAllAsync() =>
+        await _context.InformacionAcademica.ToListAsync();
+
+    public async Task<InformacionAcademica?> GetByIdAsync(int id) =>
+        await _context.InformacionAcademica.FindAsync(id);
+
+    public async Task AddAsync(InformacionAcademica info)
+    {
+        _context.InformacionAcademica.Add(info);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(InformacionAcademica info)
+    {
+        _context.InformacionAcademica.Update(info);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var info = await _context.InformacionAcademica.FindAsync(id);
+        if (info != null)
         {
-            _context = context;
-        }
-
-        public async Task<List<InformacionAcademica>> GetAllAsync() =>
-            await _context.InformacionAcademica.ToListAsync();
-
-        public async Task<InformacionAcademica?> GetByIdAsync(int id) =>
-            await _context.InformacionAcademica.FindAsync(id);
-
-        public async Task AddAsync(InformacionAcademica info)
-        {
-            _context.InformacionAcademica.Add(info);
+            _context.InformacionAcademica.Remove(info);
             await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateAsync(InformacionAcademica info)
-        {
-            _context.InformacionAcademica.Update(info);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var info = await _context.InformacionAcademica.FindAsync(id);
-            if (info != null)
-            {
-                _context.InformacionAcademica.Remove(info);
-                await _context.SaveChangesAsync();
-            }
-        }
-
-        public async Task<List<InformacionAcademica>> GetByEmpleadoIdAsync(int empleadoId)
-        {
-            return await _context.InformacionAcademica
-                .Where(a => a.ID_Empleado == empleadoId)
-                .ToListAsync();
         }
     }
 }
-

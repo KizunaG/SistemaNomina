@@ -3,11 +3,9 @@
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using NominaSystem.UI.Models
 @using NominaSystem.UI.Services.Interfaces
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
-
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
-@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject ProtectedLocalStorage LocalStorage
 
 <h3>Iniciar sesión</h3>
 <EditForm Model="@loginModel" OnSubmit="HandleLogin">
@@ -15,8 +13,8 @@
     <ValidationSummary />
 
     <div class="mb-3">
-        <label>Usuario</label>
-        <InputText class="form-control" @bind-Value="loginModel.UsuarioNombre" />
+        <label>Correo</label>
+        <InputText class="form-control" @bind-Value="loginModel.Correo" />
     </div>
     <div class="mb-3">
         <label>Contraseña</label>
@@ -37,29 +35,29 @@
 
     private async Task HandleLogin()
     {
+        error = "🔍 Entró a HandleLogin";
+
         try
         {
-            var token = await AuthService.LoginAsync(loginModel.UsuarioNombre, loginModel.Contrasena);
+            var token = await AuthService.LoginAsync(loginModel.Correo, loginModel.Contrasena);
 
             if (!string.IsNullOrEmpty(token))
             {
-                error = null;
+                error = "✅ Login correcto. Guardando token...";
 
-                // Guardar el token de forma segura
-                await LocalStorage.SetItemAsync("authToken", token);
+                await LocalStorage.SetAsync("authToken", token);
 
-
-                Navigation.NavigateTo("/empleados");
+                error = "✅ Token guardado. Redirigiendo...";
+                Navigation.NavigateTo("/empleados", true);
             }
             else
             {
-                error = "Credenciales inválidas";
+                error = "❌ Credenciales inválidas o no se obtuvo token";
             }
         }
         catch (Exception ex)
         {
-            error = "Error inesperado: " + ex.Message;
-            Console.WriteLine("❌ Excepción: " + ex.ToString());
+            error = $"❌ Excepción: {ex.Message}";
         }
     }
 }

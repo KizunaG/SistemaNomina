@@ -9,6 +9,4 @@ public interface IInformacionAcademicaService
     Task AddAsync(InformacionAcademica info);
     Task UpdateAsync(InformacionAcademica info);
     Task DeleteAsync(int id);
-
-    Task<List<InformacionAcademica>> GetByEmpleadoIdAsync(int empleadoId);
 }

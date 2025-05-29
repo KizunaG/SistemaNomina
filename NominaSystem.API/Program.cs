@@ -63,8 +63,6 @@ builder.Services.AddScoped<INominaService, NominaService>();
 builder.Services.AddScoped<IAjusteNominaService, AjusteNominaService>();
 builder.Services.AddScoped<IDescuentoLegalService, DescuentoLegalService>();
 builder.Services.AddScoped<IDetalleDescuentoNominaService, DetalleDescuentoNominaService>();
-builder.Services.AddScoped<IReporteService, ReporteService>();
-
 
 //Login
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

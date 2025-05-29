@@ -56,13 +56,6 @@ namespace NominaSystem.Infrastructure.Data
             modelBuilder.Entity<ConfiguracionExpediente>()
                 .HasIndex(c => c.TipoDocumento)
                 .IsUnique();
-
-            modelBuilder.Entity<Nomina>()
-                .HasOne(n => n.Empleado)
-                .WithMany()
-                .HasForeignKey(n => n.ID_Empleado)
-                .OnDelete(DeleteBehavior.Restrict);
-
         }
     }
 }

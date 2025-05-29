@@ -28,9 +28,9 @@ public class AuthController : ControllerBase
     public IActionResult Login([FromBody] LoginRequestDto request)
     {
         var usuario = _context.Usuarios.FirstOrDefault(u => u.UsuarioNombre == request.UsuarioNombre);
-        if (request.Contrasena != "1234")
-            return Unauthorized("Credenciales incorrectas");
 
+        if (usuario == null || !BCrypt.Net.BCrypt.Verify(request.Contrasena, usuario.Contrasena))
+            return Unauthorized("Credenciales incorrectas");
 
         var token = GenerarToken(usuario);
 

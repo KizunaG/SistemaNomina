@@ -47,13 +47,4 @@ public class DocumentoEmpleadoController : ControllerBase
         await _service.DeleteAsync(id);
         return NoContent();
     }
-    [HttpGet("por-empleado/{idEmpleado}")]
-    public async Task<IActionResult> GetPorEmpleado(int idEmpleado)
-    {
-        var documentos = await _service.GetAllAsync();
-        var filtrados = documentos.Where(d => d.ID_Empleado == idEmpleado).ToList();
-
-        return Ok(filtrados);
-    }
-
 }
