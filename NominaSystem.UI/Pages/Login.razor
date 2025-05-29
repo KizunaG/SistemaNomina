@@ -9,6 +9,7 @@
 @inject NavigationManager Navigation
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
+
 <h3>Iniciar sesión</h3>
 <EditForm Model="@loginModel" OnSubmit="HandleLogin">
     <DataAnnotationsValidator />
@@ -58,6 +59,7 @@
         }
         catch (Exception ex)
         {
+
             error = "Error inesperado: " + ex.Message;
             Console.WriteLine("❌ Excepción: " + ex.ToString());
         }
