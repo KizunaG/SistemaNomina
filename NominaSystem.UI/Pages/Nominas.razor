@@ -20,6 +20,10 @@ else
             <tr>
                 <th>Empleado</th>
                 <th>Período</th>
+                <th>Salario Base</th>
+                <th>Horas Extras</th>
+                <th>Bonificaciones</th>
+                <th>Descuento</th>
                 <th>Total Pago</th>
                 <th>Acciones</th>
             </tr>
@@ -30,6 +34,10 @@ else
                 <tr>
                     <td>@nom.NombreEmpleado</td>
                     <td>@($"{nom.PeriodoInicio?.ToString("yyyy-MM-dd")} - {nom.PeriodoFin?.ToString("yyyy-MM-dd")}")</td>
+                    <td>@nom.SalarioBase</td>
+                    <td>@nom.HorasExtras</td
+                    <td>@nom.Bonificaciones</td>
+                    <td>@nom.Descuentos</td>
                     <td>@nom.TotalPago.ToString("C")</td>
                     <td>
                         <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarNomina(nom.Id)">Editar</button>
@@ -102,7 +110,6 @@ else
         }
     }
 }
-
 
 
 

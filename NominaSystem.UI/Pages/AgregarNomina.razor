@@ -9,26 +9,21 @@
 
 <EditForm Model="nuevaNomina" OnValidSubmit="GuardarNomina">
     <DataAnnotationsValidator />
+    <ValidationSummary />
 
+    <!-- Selección de Empleado -->
     <div class="mb-3">
         <label>Empleado:</label>
-        <InputSelect class="form-control" @bind-Value="nuevaNomina.ID_Empleado">
+        <InputSelect class="form-control" @bind-Value="nuevaNomina.ID_Empleado" @onchange="ObtenerSalarioBase">
             <option value="">-- Seleccione Empleado --</option>
-            @if (empleados == null || empleados.Count == 0)
+            @foreach (var e in empleados)
             {
-                <option disabled>No hay empleados disponibles</option>
-            }
-            else
-            {
-                @foreach (var e in empleados)
-                {
-                    <option value="@e.Id">@e.Nombre</option>
-                }
+                <option value="@e.Id">@e.Nombre</option>
             }
         </InputSelect>
         <ValidationMessage For="@(() => nuevaNomina.ID_Empleado)" class="text-danger" />
     </div>
-
+       
     <div class="mb-3">
         <label>Periodo Inicio:</label>
         <InputDate class="form-control" @bind-Value="nuevaNomina.PeriodoInicio" />
@@ -39,12 +34,6 @@
         <label>Periodo Fin:</label>
         <InputDate class="form-control" @bind-Value="nuevaNomina.PeriodoFin" />
         <ValidationMessage For="@(() => nuevaNomina.PeriodoFin)" class="text-danger" />
-    </div>
-
-    <div class="mb-3">
-        <label>Salario Base:</label>
-        <InputNumber class="form-control" @bind-Value="nuevaNomina.SalarioBase" />
-        <ValidationMessage For="@(() => nuevaNomina.SalarioBase)" class="text-danger" />
     </div>
 
     <div class="mb-3">
@@ -71,7 +60,6 @@
     </div>
 </EditForm>
 
-
 @code {
     private NominaDto nuevaNomina = new();
     private List<EmpleadoDto> empleados = new();
@@ -91,7 +79,6 @@
             else
             {
                 Console.WriteLine("Token no encontrado en LocalStorage");
-                // Opcional: navegar a login o mostrar alerta
             }
         }
         catch (Exception ex)
@@ -100,28 +87,54 @@
         }
     }
 
+    private async Task ObtenerSalarioBase()
+    {
+        Console.WriteLine("Entró en ObtenerSalarioBase");  // Log de depuración
+        if (nuevaNomina.ID_Empleado != 0)
+        {
+            try
+            {
+                // Log para verificar que la solicitud se hace correctamente
+                Console.WriteLine($"Llamando a la API para obtener el salario base del empleado con ID: {nuevaNomina.ID_Empleado}");
+
+                var response = await Http.GetAsync($"api/nomina/empleado/{nuevaNomina.ID_Empleado}/salario");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var salarioBase = await response.Content.ReadFromJsonAsync<decimal>();
+
+                    // Log para verificar que el salario base es recibido
+                    Console.WriteLine($"Salario Base obtenido: {salarioBase}");
+
+                    // Asigna el salario base a la propiedad correspondiente
+                    nuevaNomina.SalarioBase = salarioBase;
+
+                    // Asegúrate de que Blazor actualice la vista
+                    StateHasChanged();  // Esto es importante para forzar la actualización de la vista
+                }
+                else
+                {
+                    Console.WriteLine($"Error al obtener salario base. Código de estado: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener salario base: {ex.Message}");
+            }
+        }
+    }
+
+
     private async Task GuardarNomina()
     {
-        Console.WriteLine("Entró en el método GuardarNomina");  // Verifica si este mensaje se imprime
-
         try
         {
-            if (nuevaNomina.PeriodoInicio.HasValue && nuevaNomina.PeriodoFin.HasValue &&
-                nuevaNomina.PeriodoFin < nuevaNomina.PeriodoInicio)
-            {
-                Console.WriteLine("El período final debe ser igual o mayor al período inicio.");
-                return;
-            }
-
             var response = await Http.PostAsJsonAsync("api/Nomina", nuevaNomina);
-
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Error al guardar nómina: {response.StatusCode}");
                 return;
             }
-
-            Console.WriteLine("Nómina guardada correctamente.");
             Navigation.NavigateTo("/nominas");
         }
         catch (Exception ex)
@@ -130,14 +143,13 @@
         }
     }
 
-
-
     private void Cancelar()
     {
-        Navigation.NavigateTo("/nomina");
+        Navigation.NavigateTo("/nominas");
     }
-
 }
+
+
 
 
 

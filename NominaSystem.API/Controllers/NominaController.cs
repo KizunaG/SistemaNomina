@@ -35,7 +35,7 @@ namespace NominaSystem.API.Controllers
                     NombreEmpleado = n.Empleado != null ? n.Empleado.Nombre : "N/A", // Asegúrate de que se asigna correctamente
                     PeriodoInicio = n.PeriodoInicio,
                     PeriodoFin = n.PeriodoFin,
-                    SalarioBase = n.SalarioBase, // Verifica que estos valores estén siendo asignados correctamente
+                    SalarioBase = (n.Empleado != null && n.Empleado.Cargo != null) ? n.Empleado.Cargo.SalarioBase : 0, // Asigna el SalarioBase desde el Cargo del Empleado
                     HorasExtras = n.HorasExtras,
                     Bonificaciones = n.Bonificaciones,
                     Descuentos = n.Descuentos,
@@ -124,6 +124,20 @@ namespace NominaSystem.API.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();  // Devuelve NoContent si la actualización fue exitosa
+        }
+        [HttpGet("empleado/{empleadoId}/salario")]
+        public async Task<IActionResult> GetSalarioBaseByEmpleado(int empleadoId)
+        {
+            var empleado = await _context.Empleados
+                .Include(e => e.Cargo)  // Asegúrate de incluir el cargo del empleado
+                .FirstOrDefaultAsync(e => e.Id == empleadoId);
+
+            if (empleado == null || empleado.Cargo == null)
+            {
+                return NotFound("Empleado o cargo no encontrado");
+            }
+
+            return Ok(empleado.Cargo.SalarioBase);  // Devuelve el salario base del cargo del empleado
         }
 
 
