@@ -35,7 +35,7 @@ else
                     <td>@nom.NombreEmpleado</td>
                     <td>@($"{nom.PeriodoInicio?.ToString("yyyy-MM-dd")} - {nom.PeriodoFin?.ToString("yyyy-MM-dd")}")</td>
                     <td>@nom.SalarioBase</td>
-                    <td>@nom.HorasExtras</td
+                    <td>@nom.HorasExtras</td>
                     <td>@nom.Bonificaciones</td>
                     <td>@nom.Descuentos</td>
                     <td>@nom.TotalPago.ToString("C")</td>
@@ -84,8 +84,19 @@ else
     }
 
 
+
     protected override async Task OnInitializedAsync()
     {
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        if (string.IsNullOrEmpty(token))
+        {
+            Navigation.NavigateTo("/login", true);
+            return;
+        }
+
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
         await CargarNominas();  // Llamar al método al inicializar el componente
     }
 

@@ -13,6 +13,8 @@ namespace NominaSystem.Application.Interfaces
         Task<byte[]> GenerarReporteEmpleadosEstadoAsync(ReporteEmpleadosEstadoRequest request);
         Task<byte[]> GenerarReporteDescuentosAsync(ReporteDescuentosRequest request);
         Task<byte[]> GenerarExpedienteEmpleadoPdfAsync(int empleadoId);
+        Task<byte[]> GenerarNominaEmpleadoPdfAsync(int nominaId);
+
 
 
     }

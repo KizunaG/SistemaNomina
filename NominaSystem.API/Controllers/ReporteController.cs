@@ -46,5 +46,17 @@ namespace NominaSystem.API.Controllers
             return File(pdfBytes, "application/pdf", $"Expediente_Empleado_{id}.pdf");
         }
 
+    
+        [HttpGet("nomina/{id}")]
+        public async Task<IActionResult> DescargarNominaIndividual(int id)
+        {
+            var pdfBytes = await _reporteService.GenerarNominaEmpleadoPdfAsync(id);
+
+            if (pdfBytes == null)
+                return NotFound("No se encontró la nómina.");
+
+            return File(pdfBytes, "application/pdf", $"Nomina_Empleado_{id}.pdf");
+        }
+
     }
 }

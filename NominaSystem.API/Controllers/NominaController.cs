@@ -50,28 +50,35 @@ namespace NominaSystem.API.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var nomina = await _context.Nominas
-                .Include(n => n.Empleado)  // Asegúrate de incluir el empleado
+                .Include(n => n.Empleado)
+                    .ThenInclude(e => e.Cargo) // incluye el Cargo
                 .FirstOrDefaultAsync(n => n.Id == id);
 
             if (nomina == null)
-            {
                 return NotFound();
-            }
+
+            var salarioBase = nomina.SalarioBase > 0
+                ? nomina.SalarioBase
+                : nomina.Empleado?.Cargo?.SalarioBase ?? 0;
+
+            var totalPago = (salarioBase + nomina.Bonificaciones + nomina.HorasExtras) - nomina.Descuentos;
 
             var nominaDto = new NominaDto
             {
                 Id = nomina.Id,
-                NombreEmpleado = nomina.Empleado?.Nombre ?? "Empleado no encontrado",  // Asigna el nombre del empleado
+                ID_Empleado = nomina.EmpleadoId,
+                NombreEmpleado = nomina.Empleado?.Nombre ?? "Empleado no encontrado",
                 PeriodoInicio = nomina.PeriodoInicio,
                 PeriodoFin = nomina.PeriodoFin,
-                SalarioBase = nomina.SalarioBase,
+                SalarioBase = salarioBase,
                 HorasExtras = nomina.HorasExtras,
                 Bonificaciones = nomina.Bonificaciones,
-                Descuentos = nomina.Descuentos
+                Descuentos = nomina.Descuentos,
             };
 
             return Ok(nominaDto);
         }
+
 
 
         [HttpPost]

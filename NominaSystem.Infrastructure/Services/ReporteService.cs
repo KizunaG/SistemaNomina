@@ -245,6 +245,25 @@ namespace NominaSystem.Infrastructure.Services
             doc.GeneratePdf(stream);
             return stream.ToArray();
         }
+
+        public async Task<byte[]> GenerarNominaEmpleadoPdfAsync(int nominaId)
+        {
+            var nomina = await _context.Nominas
+              .Include(n => n.Empleado)
+              .ThenInclude(e => e.Cargo)
+              .FirstOrDefaultAsync(n => n.Id == nominaId);
+
+
+            if (nomina == null)
+                return null;
+
+            // Calcular total si no está precargado
+            nomina.TotalPago = (nomina.SalarioBase + nomina.Bonificaciones + nomina.HorasExtras) - nomina.Descuentos;
+
+            var documento = new DocumentoNominaEmpleado(nomina);
+            return documento.Generar();
+        }
+
     }
 }
 
