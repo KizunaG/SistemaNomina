@@ -49,9 +49,30 @@ namespace NominaSystem.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var nomina = await _service.GetByIdAsync(id);
-            return nomina == null ? NotFound() : Ok(nomina);
+            var nomina = await _context.Nominas
+                .Include(n => n.Empleado)  // Asegúrate de incluir el empleado
+                .FirstOrDefaultAsync(n => n.Id == id);
+
+            if (nomina == null)
+            {
+                return NotFound();
+            }
+
+            var nominaDto = new NominaDto
+            {
+                Id = nomina.Id,
+                NombreEmpleado = nomina.Empleado?.Nombre ?? "Empleado no encontrado",  // Asigna el nombre del empleado
+                PeriodoInicio = nomina.PeriodoInicio,
+                PeriodoFin = nomina.PeriodoFin,
+                SalarioBase = nomina.SalarioBase,
+                HorasExtras = nomina.HorasExtras,
+                Bonificaciones = nomina.Bonificaciones,
+                Descuentos = nomina.Descuentos
+            };
+
+            return Ok(nominaDto);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> CrearNomina([FromBody] NominaDto nuevaNomina)
@@ -82,12 +103,29 @@ namespace NominaSystem.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Nomina nomina)
+        public async Task<IActionResult> Update(int id, [FromBody] NominaDto nominaDto)
         {
-            if (id != nomina.Id) return BadRequest();
-            await _service.UpdateAsync(nomina);
-            return NoContent();
+            var nomina = await _context.Nominas.FindAsync(id);
+            if (nomina == null)
+            {
+                return NotFound();
+            }
+
+            // Actualiza los valores de la nómina
+            nomina.PeriodoInicio = nominaDto.PeriodoInicio;
+            nomina.PeriodoFin = nominaDto.PeriodoFin;
+            nomina.SalarioBase = nominaDto.SalarioBase;
+            nomina.HorasExtras = nominaDto.HorasExtras;
+            nomina.Bonificaciones = nominaDto.Bonificaciones;
+            nomina.Descuentos = nominaDto.Descuentos;
+
+            // Guarda los cambios en la base de datos
+            _context.Nominas.Update(nomina);
+            await _context.SaveChangesAsync();
+
+            return NoContent();  // Devuelve NoContent si la actualización fue exitosa
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)

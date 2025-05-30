@@ -1,0 +1,130 @@
+﻿@page "/nominas/editar/{id}"
+@using NominaSystem.UI.Models
+@inject HttpClient Http
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Editar Nómina</h3>
+<EditForm Model="nuevaNomina" OnValidSubmit="ActualizarNomina">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <!-- Mostrar el nombre del empleado, pero no permitir seleccionarlo -->
+    <div class="mb-3">
+        <label>Empleado:</label>
+        <InputText class="form-control" @bind-Value="nuevaNomina.NombreEmpleado" readonly />
+        <ValidationMessage For="@(() => nuevaNomina.NombreEmpleado)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Periodo Inicio:</label>
+        <InputDate class="form-control" @bind-Value="nuevaNomina.PeriodoInicio" />
+        <ValidationMessage For="@(() => nuevaNomina.PeriodoInicio)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Periodo Fin:</label>
+        <InputDate class="form-control" @bind-Value="nuevaNomina.PeriodoFin" />
+        <ValidationMessage For="@(() => nuevaNomina.PeriodoFin)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Salario Base:</label>
+        <InputNumber class="form-control" @bind-Value="nuevaNomina.SalarioBase" />
+        <ValidationMessage For="@(() => nuevaNomina.SalarioBase)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Horas Extras:</label>
+        <InputNumber class="form-control" @bind-Value="nuevaNomina.HorasExtras" />
+        <ValidationMessage For="@(() => nuevaNomina.HorasExtras)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Bonificaciones:</label>
+        <InputNumber class="form-control" @bind-Value="nuevaNomina.Bonificaciones" />
+        <ValidationMessage For="@(() => nuevaNomina.Bonificaciones)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Descuentos:</label>
+        <InputNumber class="form-control" @bind-Value="nuevaNomina.Descuentos" />
+        <ValidationMessage For="@(() => nuevaNomina.Descuentos)" class="text-danger" />
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">Actualizar</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+    </div>
+</EditForm>
+
+@code {
+    private NominaDto nuevaNomina = new();
+    [Parameter] public string Id { get; set; }  // Cambia el tipo a string
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine($"ID recibido como string: {Id}"); // Verifica el valor de Id recibido
+
+        // Convertimos el string a int antes de usarlo
+        if (int.TryParse(Id, out var nominaId))
+        {
+            try
+            {
+                var token = await LocalStorage.GetItemAsync<string>("authToken");
+                if (!string.IsNullOrEmpty(token))
+                {
+                    Http.DefaultRequestHeaders.Authorization =
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                    // Obtener la nómina a editar
+                    var response = await Http.GetAsync($"api/Nomina/{nominaId}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        nuevaNomina = await response.Content.ReadFromJsonAsync<NominaDto>();
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error al obtener la nómina con ID {nominaId}. Código de estado: {response.StatusCode}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Token no encontrado en LocalStorage");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al cargar la nómina o empleados: {ex.Message}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("El parámetro 'id' no se pudo convertir a entero.");
+        }
+    }
+
+    private async Task ActualizarNomina()
+    {
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/Nomina/{nuevaNomina.Id}", nuevaNomina);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Error al actualizar la nómina: {response.StatusCode}");
+                return;
+            }
+            Navigation.NavigateTo("/nominas");  // Redirige a la lista de nóminas
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al actualizar la nómina: {ex.Message}");
+        }
+    }
+
+    private void Cancelar()
+    {
+        Navigation.NavigateTo("/nominas");
+    }
+}

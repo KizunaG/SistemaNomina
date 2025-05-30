@@ -32,9 +32,9 @@ else
                     <td>@($"{nom.PeriodoInicio?.ToString("yyyy-MM-dd")} - {nom.PeriodoFin?.ToString("yyyy-MM-dd")}")</td>
                     <td>@nom.TotalPago.ToString("C")</td>
                     <td>
-                        <button class="btn btn-info btn-sm me-1" @onclick="() => VerNomina(nom.Id)">Ver</button>
                         <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarNomina(nom.Id)">Editar</button>
                         <button class="btn btn-danger btn-sm" @onclick="() => EliminarNomina(nom.Id)">Eliminar</button>
+                        <button class="btn btn-info btn-sm me-1" @onclick="() => VerNomina(nom.Id)">Ver Nomina</button>
                     </td>
                 </tr>
             }
@@ -87,6 +87,7 @@ else
 
     private async Task EliminarNomina(int id)
     {
+        await Task.Delay(100); // Añadir un pequeño retraso para asegurarse de que Blazor esté listo
         bool confirmar = await JS.InvokeAsync<bool>("confirm", $"¿Deseas eliminar la nómina {id}?");
         if (!confirmar) return;
 
