@@ -125,6 +125,30 @@ namespace NominaSystem.API.Controllers
 
             return NoContent();  // Devuelve NoContent si la actualización fue exitosa
         }
+
+        [HttpGet("por-empleado/{empleadoId}")]
+        public async Task<IActionResult> ObtenerNominasPorEmpleado(int empleadoId)
+        {
+            var nominas = await _context.Nominas
+                .Include(n => n.Empleado)
+                .Where(n => n.EmpleadoId == empleadoId)
+                .Select(n => new NominaDto
+                {
+                    Id = n.Id,
+                    ID_Empleado = n.EmpleadoId,
+                    NombreEmpleado = n.Empleado.Nombre,
+                    PeriodoInicio = n.PeriodoInicio,
+                    PeriodoFin = n.PeriodoFin,
+                    SalarioBase = n.SalarioBase,
+                    HorasExtras = n.HorasExtras,
+                    Bonificaciones = n.Bonificaciones,
+                    Descuentos = n.Descuentos,
+                })
+                .ToListAsync();
+
+            return Ok(nominas);
+        }
+
         [HttpGet("empleado/{empleadoId}/salario")]
         public async Task<IActionResult> GetSalarioBaseByEmpleado(int empleadoId)
         {

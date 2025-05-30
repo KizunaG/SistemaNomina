@@ -91,7 +91,7 @@ else
 
     private void AgregarNomina() => Navigation.NavigateTo("/nominas/agregar");
     private void EditarNomina(int id) => Navigation.NavigateTo($"/nominas/editar/{id}");
-    private void VerNomina(int id) => Navigation.NavigateTo($"/nominas/ver/{id}");
+    private void VerNomina(int id) => Navigation.NavigateTo($"/nominas/{id}");
 
     private async Task EliminarNomina(int id)
     {

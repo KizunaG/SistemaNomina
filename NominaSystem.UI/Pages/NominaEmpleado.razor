@@ -1,0 +1,78 @@
+﻿@page "/nominas/{id:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject IJSRuntime JS
+@using NominaSystem.UI.Models
+@using System.Net.Http.Json
+
+<h3>Detalle de Nómina</h3>
+
+@if (nomina == null)
+{
+    <p><em>Cargando datos de la nómina...</em></p>
+}
+else
+{
+    <button class="btn btn-outline-primary mb-3" @onclick="DescargarPdf">
+        📄 Descargar Nómina en PDF
+    </button>
+
+    <div class="card p-3 mb-3">
+        <h5>@nomina.NombreEmpleado</h5>
+        <p><strong>Período:</strong> @($"{nomina.PeriodoInicio?.ToString("dd/MM/yyyy")} - {nomina.PeriodoFin?.ToString("dd/MM/yyyy")}")</p>
+        <p><strong>Salario Base:</strong> @nomina.SalarioBase.ToString("C")</p>
+        <p><strong>Horas Extras:</strong> @nomina.HorasExtras</p>
+        <p><strong>Bonificaciones:</strong> @nomina.Bonificaciones</p>
+        <p><strong>Descuentos:</strong> @nomina.Descuentos</p>
+        <p><strong>Total a Pagar:</strong> @nomina.TotalPago.ToString("C")</p>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private NominaDto? nomina;
+
+    private async Task DescargarPdf()
+    {
+        try
+        {
+            var token = await LocalStorage.GetItemAsync<string>("authToken");
+            Http.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var stream = await Http.GetStreamAsync($"api/Reporte/nomina/{id}");
+
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            var bytes = memoryStream.ToArray();
+            var base64 = Convert.ToBase64String(bytes);
+
+            await JS.InvokeVoidAsync("downloadFileFromBytes", base64, $"nomina_{id}.pdf");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al descargar el PDF: {ex.Message}");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        try
+        {
+            nomina = await Http.GetFromJsonAsync<NominaDto>($"api/Nomina/{id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al cargar la nómina: {ex.Message}");
+        }
+    }
+}
+
+
