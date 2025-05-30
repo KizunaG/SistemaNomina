@@ -76,7 +76,7 @@ namespace NominaSystem.Infrastructure.Services
                         foreach (var n in nominas)
                         {
                             table.Cell().Element(Cell).Text(i++.ToString());
-                            table.Cell().Element(Cell).Text(n.ID_Empleado.ToString());
+                            table.Cell().Element(Cell).Text(n.EmpleadoId.ToString());
                             table.Cell().Element(Cell).Text($"{n.PeriodoInicio:dd/MM/yyyy} - {n.PeriodoFin:dd/MM/yyyy}");
                             table.Cell().Element(Cell).Text(n.SalarioBase.ToString("C", CultureInfo.CurrentCulture));
                             table.Cell().Element(Cell).Text(n.Bonificaciones.ToString("C", CultureInfo.CurrentCulture));

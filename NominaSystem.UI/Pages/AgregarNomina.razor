@@ -1,0 +1,144 @@
+﻿@page "/nominas/agregar"
+@using NominaSystem.UI.Models
+@inject HttpClient Http
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager Navigation
+@using System.ComponentModel.DataAnnotations
+
+<h3>Agregar Nómina</h3>
+
+<EditForm Model="nuevaNomina" OnValidSubmit="GuardarNomina">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label>Empleado:</label>
+        <InputSelect class="form-control" @bind-Value="nuevaNomina.ID_Empleado">
+            <option value="">-- Seleccione Empleado --</option>
+            @if (empleados == null || empleados.Count == 0)
+            {
+                <option disabled>No hay empleados disponibles</option>
+            }
+            else
+            {
+                @foreach (var e in empleados)
+                {
+                    <option value="@e.Id">@e.Nombre</option>
+                }
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => nuevaNomina.ID_Empleado)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Periodo Inicio:</label>
+        <InputDate class="form-control" @bind-Value="nuevaNomina.PeriodoInicio" />
+        <ValidationMessage For="@(() => nuevaNomina.PeriodoInicio)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Periodo Fin:</label>
+        <InputDate class="form-control" @bind-Value="nuevaNomina.PeriodoFin" />
+        <ValidationMessage For="@(() => nuevaNomina.PeriodoFin)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Salario Base:</label>
+        <InputNumber class="form-control" @bind-Value="nuevaNomina.SalarioBase" />
+        <ValidationMessage For="@(() => nuevaNomina.SalarioBase)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Horas Extras:</label>
+        <InputNumber class="form-control" @bind-Value="nuevaNomina.HorasExtras" />
+        <ValidationMessage For="@(() => nuevaNomina.HorasExtras)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Bonificaciones:</label>
+        <InputNumber class="form-control" @bind-Value="nuevaNomina.Bonificaciones" />
+        <ValidationMessage For="@(() => nuevaNomina.Bonificaciones)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Descuentos:</label>
+        <InputNumber class="form-control" @bind-Value="nuevaNomina.Descuentos" />
+        <ValidationMessage For="@(() => nuevaNomina.Descuentos)" class="text-danger" />
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+    </div>
+</EditForm>
+
+
+@code {
+    private NominaDto nuevaNomina = new();
+    private List<EmpleadoDto> empleados = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var token = await LocalStorage.GetItemAsync<string>("authToken");
+            if (!string.IsNullOrEmpty(token))
+            {
+                Http.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                empleados = await Http.GetFromJsonAsync<List<EmpleadoDto>>("api/Empleados");
+            }
+            else
+            {
+                Console.WriteLine("Token no encontrado en LocalStorage");
+                // Opcional: navegar a login o mostrar alerta
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar empleados: {ex.Message}");
+        }
+    }
+
+    private async Task GuardarNomina()
+    {
+        Console.WriteLine("Entró en el método GuardarNomina");  // Verifica si este mensaje se imprime
+
+        try
+        {
+            if (nuevaNomina.PeriodoInicio.HasValue && nuevaNomina.PeriodoFin.HasValue &&
+                nuevaNomina.PeriodoFin < nuevaNomina.PeriodoInicio)
+            {
+                Console.WriteLine("El período final debe ser igual o mayor al período inicio.");
+                return;
+            }
+
+            var response = await Http.PostAsJsonAsync("api/Nomina", nuevaNomina);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Error al guardar nómina: {response.StatusCode}");
+                return;
+            }
+
+            Console.WriteLine("Nómina guardada correctamente.");
+            Navigation.NavigateTo("/nominas");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Excepción al guardar nómina: {ex.Message}");
+        }
+    }
+
+
+
+    private void Cancelar()
+    {
+        Navigation.NavigateTo("/nomina");
+    }
+
+}
+
+
+
+

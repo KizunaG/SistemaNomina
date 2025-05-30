@@ -1,27 +1,84 @@
 @using Microsoft.AspNetCore.Components.Routing
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light px-4">
-    <a class="navbar-brand" href="/">Sistema de Nómina</a>
+<nav class="navbar navbar-expand-lg px-4 navbar-custom">
+    <a class="navbar-brand text-white" href="/">Sistema de Nómina</a>
 
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto">
-
             <li class="nav-item">
-                <NavLink class="nav-link" href="/login">Login</NavLink>
+                <NavLink class="nav-link text-white" href="/login">Login</NavLink>
             </li>
             <li class="nav-item">
-                <NavLink class="nav-link" href="/empleados" Match="NavLinkMatch.All">Empleados</NavLink>
+                <NavLink class="nav-link text-white" href="/empleados" Match="NavLinkMatch.All">Empleados</NavLink>
             </li>
             <li class="nav-item">
-                <NavLink class="nav-link" href="/departamentos" Match="NavLinkMatch.All">Departamentos</NavLink>
+                <NavLink class="nav-link text-white" href="/departamentos" Match="NavLinkMatch.All">Departamentos</NavLink>
             </li>
             <li class="nav-item">
-                <NavLink class="nav-link" href="/cargos" Match="NavLinkMatch.All">Cargos</NavLink>
+                <NavLink class="nav-link text-white" href="/cargos" Match="NavLinkMatch.All">Cargos</NavLink>
             </li>
             <li class="nav-item">
-                <NavLink class="nav-link" href="/nominas" Match="NavLinkMatch.All">Nominas</NavLink>
+                <NavLink class="nav-link text-white" href="/nominas" Match="NavLinkMatch.All">Nominas</NavLink>
             </li>
         </ul>
     </div>
 </nav>
+
+<style>
+    .navbar-custom {
+        background: linear-gradient(to right, #0000FF, #1E90FF); /* Degradado azul */
+        padding: 10px 20px; /* Ajusta el padding si es necesario */
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+        position: relative;
+        overflow: hidden;
+    }
+
+        /* Curvatura hacia abajo en la parte inferior */
+        .navbar-custom::after {
+            content: "";
+            position: absolute;
+            bottom: -20px; /* Ajusta para que la curva quede bien posicionada */
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: white; /* Color del fondo, puedes cambiarlo */
+            border-radius: 50% 50% 0 0; /* Curvatura en la parte inferior, hacia abajo */
+        }
+
+    /* Animación de los botones */
+    .nav-link {
+        position: relative;
+        overflow: hidden;
+        transition: color 0.4s ease, transform 0.3s ease; /* Transiciones suaves */
+    }
+
+        .nav-link:hover {
+            color: #FFD700; /* Cambia el color a dorado cuando el puntero pasa sobre el texto */
+            transform: scale(1.1); /* Agranda ligeramente el texto */
+        }
+
+        /* Opcional: Efecto adicional de animación en los enlaces */
+        .nav-link::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: #FFD700;
+            bottom: 0;
+            left: 0;
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.25s ease-out;
+        }
+
+        .nav-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+</style>
+
+
+
+
+
 

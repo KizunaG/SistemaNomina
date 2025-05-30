@@ -1,20 +1,17 @@
 ﻿@page "/nominas"
 @using NominaSystem.UI.Models
-@inject NominaService NominaService
+@inject HttpClient Http
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject IJSRuntime JS
 @inject NavigationManager Navigation
 
+<h3>Nóminas</h3>
 
-<h3>Lista de Nóminas</h3>
+<button class="btn btn-primary mb-2" @onclick="AgregarNomina">Agregar Nómina</button>
 
-<button class="btn btn-primary mb-3" @onclick="AgregarNomina">Agregar Nómina</button>
-
-@if (nominas == null)
+@if (nominas == null || !nominas.Any())  //Se asegura de mostrar el mensaje adecuado cuando no haya datos
 {
-    <p><em>Cargando...</em></p>
-}
-else if (!nominas.Any())
-{
-    <p>No hay nóminas registradas.</p>
+    <p><em>Cargando nóminas...</em></p>
 }
 else
 {
@@ -22,22 +19,22 @@ else
         <thead>
             <tr>
                 <th>Empleado</th>
-                <th>Periodo</th>
+                <th>Período</th>
                 <th>Total Pago</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var nomina in nominas)
+            @foreach (var nom in nominas)
             {
                 <tr>
-                    <td>@nomina.NombreEmpleado</td>
-                    <td>@nomina.Periodo</td>
-                    <td>@nomina.TotalPago.ToString("C")</td>
+                    <td>@nom.NombreEmpleado</td>
+                    <td>@($"{nom.PeriodoInicio?.ToString("yyyy-MM-dd")} - {nom.PeriodoFin?.ToString("yyyy-MM-dd")}")</td>
+                    <td>@nom.TotalPago.ToString("C")</td>
                     <td>
-                        <button class="btn btn-sm btn-info me-1" @onclick="() => VerNomina(nomina.Id)">Ver</button>
-                        <button class="btn btn-sm btn-warning me-1" @onclick="() => EditarNomina(nomina.Id)">Editar</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarNomina(nomina.Id)">Eliminar</button>
+                        <button class="btn btn-info btn-sm me-1" @onclick="() => VerNomina(nom.Id)">Ver</button>
+                        <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarNomina(nom.Id)">Editar</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => EliminarNomina(nom.Id)">Eliminar</button>
                     </td>
                 </tr>
             }
@@ -46,44 +43,67 @@ else
 }
 
 @code {
-    private List<NominaDto>? nominas;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await CargarNominas();
-    }
+    private List<NominaDto> nominas = new List<NominaDto>();  // Inicializamos como lista vacía
 
     private async Task CargarNominas()
     {
-        nominas = await NominaService.GetNominasAsync();
+        try
+        {
+            var response = await Http.GetAsync("api/Nomina");
+
+            if (response.IsSuccessStatusCode)
+            {
+                nominas = await response.Content.ReadFromJsonAsync<List<NominaDto>>() ?? new List<NominaDto>();
+                Console.WriteLine($"Cantidad de nóminas recibidas: {nominas.Count}");
+
+                // Verificar que el campo NombreEmpleado está siendo correctamente asignado
+                foreach (var nom in nominas)
+                {
+                    Console.WriteLine($"Empleado: {nom.NombreEmpleado}");  // Verificar que se muestra el nombre del empleado
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Error al obtener nóminas. Código de estado: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al obtener nóminas: {ex.Message}");
+        }
+
+        StateHasChanged();
     }
 
-    private void AgregarNomina()
+
+    protected override async Task OnInitializedAsync()
     {
-        Navigation.NavigateTo("/nominas/agregar");
+        await CargarNominas();  // Llamar al método al inicializar el componente
     }
 
-    private void EditarNomina(int id)
-    {
-        Navigation.NavigateTo($"/nominas/editar/{id}");
-    }
-
-    private void VerNomina(int id)
-    {
-        Navigation.NavigateTo($"/nominas/ver/{id}");
-    }
+    private void AgregarNomina() => Navigation.NavigateTo("/nominas/agregar");
+    private void EditarNomina(int id) => Navigation.NavigateTo($"/nominas/editar/{id}");
+    private void VerNomina(int id) => Navigation.NavigateTo($"/nominas/ver/{id}");
 
     private async Task EliminarNomina(int id)
     {
-        bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", $"¿Está seguro que desea eliminar la nómina con Id {id}?");
-        if (confirmado)
+        bool confirmar = await JS.InvokeAsync<bool>("confirm", $"¿Deseas eliminar la nómina {id}?");
+        if (!confirmar) return;
+
+        var response = await Http.DeleteAsync($"api/Nomina/{id}");
+        if (response.IsSuccessStatusCode)
         {
-            await NominaService.DeleteNominaAsync(id);
-            await CargarNominas();
+            await CargarNominas();  // Recargar la lista de nóminas después de eliminar
+        }
+        else
+        {
+            Console.WriteLine($"Error al eliminar nómina: {response.StatusCode}");
         }
     }
-
-    [Inject]
-    private IJSRuntime JSRuntime { get; set; }
 }
+
+
+
+
+
 

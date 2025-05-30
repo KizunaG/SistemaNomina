@@ -60,7 +60,7 @@ namespace NominaSystem.Infrastructure.Data
             modelBuilder.Entity<Nomina>()
                 .HasOne(n => n.Empleado)
                 .WithMany()
-                .HasForeignKey(n => n.ID_Empleado)
+                .HasForeignKey(n => n.EmpleadoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Relación entre Empleado y Cargo

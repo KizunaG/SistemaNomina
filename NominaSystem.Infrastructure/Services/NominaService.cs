@@ -84,8 +84,12 @@ namespace NominaSystem.Infrastructure.Services
                 {
                     Id = n.Id,
                     NombreEmpleado = n.Empleado != null ? n.Empleado.Nombre : "N/A",
-                    Periodo = $"{n.PeriodoInicio:dd/MM/yyyy} - {n.PeriodoFin:dd/MM/yyyy}",
-                    TotalPago = n.TotalPago
+                    PeriodoInicio = n.PeriodoInicio,
+                    PeriodoFin = n.PeriodoFin,
+                    SalarioBase = n.SalarioBase,
+                    HorasExtras = n.HorasExtras,
+                    Bonificaciones = n.Bonificaciones,
+                    Descuentos = n.Descuentos,
                 })
                 .ToListAsync();
         }
