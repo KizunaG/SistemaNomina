@@ -1,0 +1,58 @@
+﻿@page "/registro"
+@using System.ComponentModel.DataAnnotations
+@using NominaSystem.UI.Models
+@using NominaSystem.UI.Services.Interfaces
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<h3>Registro de Usuario</h3>
+
+<EditForm Model="registroModel" OnValidSubmit="HandleRegistro">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Nombre de Usuario</label>
+        <InputText @bind-Value="registroModel.UsuarioNombre" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Contraseña</label>
+        <InputText type="password" @bind-Value="registroModel.Contrasena" class="form-control" />
+    </div>
+
+    <button class="btn btn-success" type="submit">Registrarse</button>
+
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert alert-info mt-3">@mensaje</div>
+    }
+</EditForm>
+
+@code {
+    private RegisterRequest registroModel = new();
+    private string? mensaje;
+
+    private async Task HandleRegistro()
+    {
+        try
+        {
+            var exito = await AuthService.RegistrarAsync(registroModel);
+
+            if (exito)
+            {
+                mensaje = "Registro exitoso. Puedes iniciar sesión.";
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                mensaje = "No se pudo completar el registro.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+        }
+    }
+}
+
