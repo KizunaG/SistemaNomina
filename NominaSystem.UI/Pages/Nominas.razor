@@ -106,20 +106,23 @@ else
 
     private async Task EliminarNomina(int id)
     {
-        await Task.Delay(100); // Añadir un pequeño retraso para asegurarse de que Blazor esté listo
-        bool confirmar = await JS.InvokeAsync<bool>("confirm", $"¿Deseas eliminar la nómina {id}?");
-        if (!confirmar) return;
+       
+        bool confirmado = await JS.InvokeAsync<bool>("confirmarEliminacionNomina", id);
+        if (!confirmado) return;
+
 
         var response = await Http.DeleteAsync($"api/Nomina/{id}");
         if (response.IsSuccessStatusCode)
         {
-            await CargarNominas();  // Recargar la lista de nóminas después de eliminar
+            await CargarNominas();
+            await JS.InvokeVoidAsync("mostrarAlertaExito", "Nómina eliminada correctamente.");
         }
         else
         {
-            Console.WriteLine($"Error al eliminar nómina: {response.StatusCode}");
+            await JS.InvokeVoidAsync("Swal.fire", "Error", "No se pudo eliminar la nómina", "error");
         }
     }
+
 }
 
 

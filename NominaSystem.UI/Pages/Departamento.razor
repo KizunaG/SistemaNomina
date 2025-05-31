@@ -64,7 +64,7 @@ else
 
     private async Task EliminarDepartamento(int id)
     {
-        bool confirmado = await JS.InvokeAsync<bool>("confirm", $"¿Desea eliminar el departamento con ID {id}?");
+        bool confirmado = await JS.InvokeAsync<bool>("confirmarEliminacionDepartamento", id);
         if (!confirmado) return;
 
         var response = await Http.DeleteAsync($"api/Departamentos/{id}");
@@ -72,13 +72,14 @@ else
         {
             await CargarDepartamentos();
             StateHasChanged();
+            await JS.InvokeVoidAsync("mostrarAlertaExito", "Departamento eliminado correctamente.");
         }
         else
         {
-            // Manejo de error si deseas
-            Console.WriteLine("Error al eliminar departamento.");
+            await JS.InvokeVoidAsync("Swal.fire", "Error", "No se pudo eliminar el departamento", "error");
         }
     }
+
 
     public class DepartamentoDto
     {

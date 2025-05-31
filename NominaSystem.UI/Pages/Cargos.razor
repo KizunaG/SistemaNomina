@@ -144,19 +144,22 @@ else
 
     private async Task EliminarCargo(int id)
     {
-        bool confirmado = await JS.InvokeAsync<bool>("confirm", "¿Deseas eliminar este cargo?");
+        bool confirmado = await JS.InvokeAsync<bool>("confirmarEliminacionCargo");
         if (!confirmado) return;
+
 
         var response = await Http.DeleteAsync($"api/cargos/{id}");
         if (response.IsSuccessStatusCode)
         {
             await CargarCargos();
+            await JS.InvokeVoidAsync("mostrarAlertaExito", "Cargo eliminado correctamente.");
         }
         else
         {
-            await JS.InvokeVoidAsync("alert", "Error al eliminar cargo");
+            await JS.InvokeVoidAsync("Swal.fire", "Error", "Error al eliminar cargo", "error");
         }
     }
+
 
    
     public class Cargo

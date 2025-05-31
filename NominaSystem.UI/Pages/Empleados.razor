@@ -149,7 +149,10 @@ else
 
     private async Task EliminarEmpleado(int id)
     {
-        bool confirmar = await JS.InvokeAsync<bool>("confirm", $"¿Deseas eliminar al empleado {id}?");
+        var empleado = empleados.FirstOrDefault(e => e.Id == id);
+        if (empleado == null) return;
+
+        bool confirmar = await JS.InvokeAsync<bool>("confirmarEliminacionEmpleado", empleado.Nombre);
         if (!confirmar) return;
 
         var response = await Http.DeleteAsync($"api/Empleados/{id}");
@@ -159,5 +162,6 @@ else
             StateHasChanged();
         }
     }
+
 }
 
