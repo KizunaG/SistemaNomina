@@ -18,6 +18,7 @@ public class ExpedienteEmpleadoService : IExpedienteEmpleadoService
         await _context.ExpedientesEmpleado.ToListAsync();
     public async Task<bool> ValidarExpedienteCompleto(int empleadoId)
     {
+        // 1. Verificar documentos obligatorios entregados
         var documentosRequeridos = await _context.ConfiguracionExpedientes
             .Where(c => c.Obligatorio && c.TipoDocumento != null)
             .Select(c => c.TipoDocumento!)
@@ -28,7 +29,14 @@ public class ExpedienteEmpleadoService : IExpedienteEmpleadoService
             .Select(d => d.TipoDocumento!)
             .ToListAsync();
 
-        return documentosRequeridos.All(dr => documentosEntregados.Contains(dr));
+        var documentosCompletos = documentosRequeridos.All(dr => documentosEntregados.Contains(dr));
+
+        // 2. Verificar si tiene al menos una información académica
+        var tieneInformacionAcademica = await _context.InformacionAcademica
+            .AnyAsync(i => i.ID_Empleado == empleadoId);
+
+        // 3. Retornar true solo si ambas condiciones se cumplen
+        return documentosCompletos && tieneInformacionAcademica;
     }
 
 

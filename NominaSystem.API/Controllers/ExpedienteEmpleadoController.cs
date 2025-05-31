@@ -30,8 +30,9 @@ public class ExpedienteEmpleadoController : ControllerBase
     public async Task<IActionResult> ValidarExpediente(int empleadoId)
     {
         var esValido = await _service.ValidarExpedienteCompleto(empleadoId);
-        return Ok(new { empleadoId, expedienteCompleto = esValido });
+        return Ok(esValido); // 👈 devolver solo el booleano
     }
+
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ExpedienteEmpleado expediente)
