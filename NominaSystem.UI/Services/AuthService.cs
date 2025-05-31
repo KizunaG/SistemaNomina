@@ -32,8 +32,16 @@ public class AuthService : IAuthService
         return null;
     }
 
+    public async Task<bool> RegistrarAsync(RegisterRequest request)
+    {
+        var response = await _http.PostAsJsonAsync("https://localhost:7122/api/Auth/registrar", request);
+        return response.IsSuccessStatusCode;
+    }
+
     private class TokenResponse
     {
         public string Token { get; set; } = string.Empty;
     }
 }
+
+

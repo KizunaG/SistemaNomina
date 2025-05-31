@@ -1,0 +1,168 @@
+﻿@page "/cargos"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Cargos</h3>
+
+<button class="btn btn-primary mb-3" @onclick="MostrarAgregar">Agregar Cargo</button>
+
+@if (cargos == null)
+{
+    <p><em>Cargando cargos...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nombre Cargo</th>
+                <th>Salario Base</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cargo in cargos)
+            {
+                <tr>
+                    <td>@cargo.Id</td>
+                    <td>@cargo.NombreCargo</td>
+                    <td>@cargo.SalarioBase.ToString("C")</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-2" @onclick="() => EditarCargo(cargo)">Editar</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarCargo(cargo.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<!-- Modal para agregar/editar -->
+@if (mostrarModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@((cargoEdicion.Id == 0) ? "Agregar Cargo" : "Editar Cargo")</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="cargoEdicion" OnValidSubmit="GuardarCargo">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label>Nombre Cargo:</label>
+                            <InputText class="form-control" @bind-Value="cargoEdicion.NombreCargo" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Salario Base:</label>
+                            <InputNumber class="form-control" @bind-Value="cargoEdicion.SalarioBase" />
+                        </div>
+
+                        <button type="submit" class="btn btn-success">@((cargoEdicion.Id == 0) ? "Agregar" : "Guardar")</button>
+                        <button type="button" class="btn btn-secondary ms-2" @onclick="CerrarModal">Cancelar</button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Cargo>? cargos;
+    private bool mostrarModal = false;
+    private Cargo cargoEdicion = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCargos();
+    }
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+    }
+
+
+    private async Task CargarCargos()
+    {
+        cargos = await Http.GetFromJsonAsync<List<Cargo>>("api/cargos");
+    }
+
+    private void MostrarAgregar()
+    {
+        cargoEdicion = new Cargo();
+        mostrarModal = true;
+    }
+
+    private void EditarCargo(Cargo cargo)
+    {
+        cargoEdicion = new Cargo
+            {
+                Id = cargo.Id,
+                NombreCargo = cargo.NombreCargo,
+                SalarioBase = cargo.SalarioBase
+            };
+        mostrarModal = true;
+    }
+
+    private async Task GuardarCargo()
+    {
+        if (cargoEdicion.Id == 0)
+        {
+            // Agregar nuevo cargo
+            var response = await Http.PostAsJsonAsync("api/cargos", cargoEdicion);
+            if (response.IsSuccessStatusCode)
+            {
+                await CargarCargos();
+                mostrarModal = false;
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Error al agregar cargo");
+            }
+        }
+        else
+        {
+            // Actualizar cargo existente
+            var response = await Http.PutAsJsonAsync($"api/cargos/{cargoEdicion.Id}", cargoEdicion);
+            if (response.IsSuccessStatusCode)
+            {
+                await CargarCargos();
+                mostrarModal = false;
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Error al actualizar cargo");
+            }
+        }
+    }
+
+    private async Task EliminarCargo(int id)
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm", "¿Deseas eliminar este cargo?");
+        if (!confirmado) return;
+
+        var response = await Http.DeleteAsync($"api/cargos/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            await CargarCargos();
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Error al eliminar cargo");
+        }
+    }
+
+   
+    public class Cargo
+    {
+        public int Id { get; set; }
+        public string NombreCargo { get; set; } = string.Empty;
+        public decimal SalarioBase { get; set; }
+    }
+}

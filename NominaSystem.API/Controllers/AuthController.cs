@@ -7,6 +7,8 @@ using System.Security.Claims;
 using System.Text;
 using BCrypt.Net;
 using NominaSystem.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace NominaSystem.API.Controllers;
@@ -25,17 +27,27 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequestDto request)
+    [AllowAnonymous]
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
     {
-        var usuario = _context.Usuarios.FirstOrDefault(u => u.UsuarioNombre == request.UsuarioNombre);
-        if (request.Contrasena != "1234")
-            return Unauthorized("Credenciales incorrectas");
+        var usuario = await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.UsuarioNombre == request.UsuarioNombre);
 
+        if (usuario == null)
+            return Unauthorized("Usuario no encontrado");
 
+        // 🔐 Comparar la contraseña ingresada con la contraseña hasheada en la base de datos
+        bool esValida = BCrypt.Net.BCrypt.Verify(request.Contrasena, usuario.Contrasena);
+
+        if (!esValida)
+            return Unauthorized("Contraseña incorrecta");
+
+        // ✅ Generar el token
         var token = GenerarToken(usuario);
 
         return Ok(new { token });
     }
+
 
     private string GenerarToken(Usuario usuario)
     {
@@ -58,5 +70,29 @@ public class AuthController : ControllerBase
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+    [HttpPost("registrar")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Registrar([FromBody] RegisterRequest request)
+    {
+        // Verificar si ya existe un usuario con ese nombre
+        var existe = await _context.Usuarios
+            .AnyAsync(u => u.UsuarioNombre == request.UsuarioNombre);
+
+        if (existe)
+            return BadRequest("El nombre de usuario ya está en uso.");
+
+        var nuevoUsuario = new Usuario
+        {
+            UsuarioNombre = request.UsuarioNombre,
+            Contrasena = BCrypt.Net.BCrypt.HashPassword(request.Contrasena), // Hashea la contraseña
+            ID_Rol = 2, // Rol por defecto: 2 = Usuario
+            ID_Empleado = 0 // Asociar después si es necesario
+        };
+
+        _context.Usuarios.Add(nuevoUsuario);
+        await _context.SaveChangesAsync();
+
+        return Ok("Usuario registrado correctamente.");
     }
 }

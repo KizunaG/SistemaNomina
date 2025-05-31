@@ -39,6 +39,24 @@ namespace NominaSystem.API.Controllers
             var pdf = await _reporteService.GenerarReporteDescuentosAsync(request);
             return File(pdf, "application/pdf", $"reporte_descuentos_{DateTime.Now:yyyyMMddHHmmss}.pdf");
         }
+        [HttpGet("expediente/{id}")]
+        public async Task<IActionResult> DescargarExpediente(int id)
+        {
+            var pdfBytes = await _reporteService.GenerarExpedienteEmpleadoPdfAsync(id);
+            return File(pdfBytes, "application/pdf", $"Expediente_Empleado_{id}.pdf");
+        }
+
+    
+        [HttpGet("nomina/{id}")]
+        public async Task<IActionResult> DescargarNominaIndividual(int id)
+        {
+            var pdfBytes = await _reporteService.GenerarNominaEmpleadoPdfAsync(id);
+
+            if (pdfBytes == null)
+                return NotFound("No se encontró la nómina.");
+
+            return File(pdfBytes, "application/pdf", $"Nomina_Empleado_{id}.pdf");
+        }
 
     }
 }

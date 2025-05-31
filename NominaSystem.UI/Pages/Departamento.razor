@@ -1,0 +1,91 @@
+﻿@page "/departamentos"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@using System.ComponentModel.DataAnnotations
+@using NominaSystem.UI.Models
+
+<h3>Departamentos</h3>
+
+<button class="btn btn-primary mb-3" @onclick="AgregarDepartamento">Agregar Departamento</button>
+
+@if (departamentos == null)
+{
+    <p><em>Cargando departamentos...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nombre Departamento</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dep in departamentos)
+            {
+                <tr>
+                    <td>@dep.Id</td>
+                    <td>@dep.NombreDepartamento</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarDepartamento(dep.Id)">Editar</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => EliminarDepartamento(dep.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<DepartamentoDto>? departamentos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDepartamentos();
+    }
+
+    private async Task CargarDepartamentos()
+    {
+        departamentos = await Http.GetFromJsonAsync<List<DepartamentoDto>>("api/Departamentos");
+    }
+
+    private void AgregarDepartamento()
+    {
+        Navigation.NavigateTo("/departamentos/agregar");
+    }
+
+    private void EditarDepartamento(int id)
+    {
+        Navigation.NavigateTo($"/departamentos/editar/{id}");
+    }
+
+    private async Task EliminarDepartamento(int id)
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm", $"¿Desea eliminar el departamento con ID {id}?");
+        if (!confirmado) return;
+
+        var response = await Http.DeleteAsync($"api/Departamentos/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            await CargarDepartamentos();
+            StateHasChanged();
+        }
+        else
+        {
+            // Manejo de error si deseas
+            Console.WriteLine("Error al eliminar departamento.");
+        }
+    }
+
+    public class DepartamentoDto
+    {
+        public int Id { get; set; }
+      
+        [Required(ErrorMessage = "El nombre del departamento es obligatorio")]
+        public string NombreDepartamento { get; set; } = string.Empty;
+    }
+}
+

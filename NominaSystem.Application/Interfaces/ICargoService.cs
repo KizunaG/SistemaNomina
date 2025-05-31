@@ -9,4 +9,6 @@ public interface ICargoService
     Task AddAsync(Cargo cargo);
     Task UpdateAsync(Cargo cargo);
     Task DeleteAsync(int id);
+
+    Task<List<Cargo>> BuscarPorNombreAsync(string nombre);
 }

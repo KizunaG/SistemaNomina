@@ -2,9 +2,10 @@
 using NominaSystem.Application.Interfaces;
 using NominaSystem.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
-
+using NominaSystem.Application.DTOs;
 
 namespace NominaSystem.API.Controllers;
+
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
@@ -17,11 +18,31 @@ public class EmpleadosController : ControllerBase
         _service = service;
     }
 
+    [HttpGet("filtrar")]
+    public async Task<IActionResult> Filtrar([FromQuery] string? busqueda, [FromQuery] int pagina = 1, [FromQuery] int tamanoPagina = 10)
+    {
+        var empleados = await _service.GetAllAsync();
+
+        var filtered = empleados.Where(e =>
+            string.IsNullOrWhiteSpace(busqueda) ||
+            e.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+            e.Dpi.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
+
+        var total = filtered.Count();
+
+        var paged = filtered
+            .Skip((pagina - 1) * tamanoPagina)
+            .Take(tamanoPagina)
+            .ToList();
+
+        return Ok(new { Datos = paged, Total = total });
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var empleados = await _service.GetAllAsync();
-        return Ok(empleados);
+        var empleadosDto = await _service.GetAllAsync();
+        return Ok(empleadosDto);
     }
 
     [HttpGet("{id}")]
@@ -33,19 +54,25 @@ public class EmpleadosController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] Empleado empleado)
+    public async Task<IActionResult> Create([FromBody] EmpleadoDto empleadoDto)
     {
-        await _service.AddAsync(empleado);
-        return CreatedAtAction(nameof(GetById), new { id = empleado.Id }, empleado);
+        var empleadoCreado = await _service.AddAsync(empleadoDto);
+        return CreatedAtAction(nameof(GetById), new { id = empleadoCreado.Id }, empleadoCreado);
     }
 
+
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] Empleado empleado)
+    public async Task<IActionResult> Update(int id, [FromBody] EmpleadoDto empleadoDto)
     {
-        if (id != empleado.Id) return BadRequest("ID no coincide");
-        await _service.UpdateAsync(empleado);
-        return NoContent();
+        if (id != empleadoDto.Id)
+            return BadRequest("ID no coincide");
+
+        await _service.UpdateAsync(empleadoDto);
+
+        // Cambiar NoContent() por Ok con algún dato o mensaje
+        return Ok(new { mensaje = "Empleado actualizado correctamente" });
     }
+
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
@@ -54,3 +81,6 @@ public class EmpleadosController : ControllerBase
         return NoContent();
     }
 }
+
+
+

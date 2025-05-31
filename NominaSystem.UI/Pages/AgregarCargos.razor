@@ -1,0 +1,63 @@
+﻿@page "/cargos/agregar"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using System.ComponentModel.DataAnnotations
+
+<h3>Agregar Cargo</h3>
+
+<EditForm Model="nuevoCargo" OnValidSubmit="GuardarCargo">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label>Nombre del Cargo:</label>
+        <InputText class="form-control" @bind-Value="nuevoCargo.NombreCargo" />
+        <ValidationMessage For="@(() => nuevoCargo.NombreCargo)" />
+    </div>
+
+    <div class="mb-3">
+        <label>Salario Base:</label>
+        <InputNumber class="form-control" @bind-Value="nuevoCargo.SalarioBase" />
+        <ValidationMessage For="@(() => nuevoCargo.SalarioBase)" />
+    </div>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+    </div>
+</EditForm>
+
+@code {
+    private Cargo nuevoCargo = new();
+
+    private async Task GuardarCargo()
+    {
+        var response = await Http.PostAsJsonAsync("api/Cargos", nuevoCargo);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/cargos");
+        }
+        else
+        {
+            // Manejar error, mostrar mensaje, etc.
+            Console.WriteLine("Error al guardar cargo.");
+        }
+    }
+
+    private void Cancelar()
+    {
+        Navigation.NavigateTo("/cargos");
+    }
+
+    public class Cargo
+    {
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "El nombre del cargo es obligatorio")]
+        public string NombreCargo { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El salario base es obligatorio")]
+        [Range(0, double.MaxValue, ErrorMessage = "El salario base debe ser positivo")]
+        public decimal SalarioBase { get; set; }
+    }
+}
+

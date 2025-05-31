@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 
 namespace NominaSystem.Domain.Entities;
 
@@ -18,10 +13,16 @@ public class Empleado
     public required string DPI { get; set; }
     public required string EstadoLaboral { get; set; }
     public DateTime? FechaIngreso { get; set; }
+
     [NotMapped]
     public bool ExpedienteCompleto { get; set; }
 
-
+    // Llaves foráneas
     public int? ID_Cargo { get; set; }
     public int? ID_Departamento { get; set; }
+
+    // Propiedades de navegación
+    public Cargo? Cargo { get; set; }
+    public Departamento? Departamento { get; set; }
+
 }

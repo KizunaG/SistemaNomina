@@ -1,0 +1,80 @@
+﻿@page "/cargos/editar/{id:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using System.ComponentModel.DataAnnotations
+@using System.Net.Http.Json
+
+<h3>Editar Cargo</h3>
+
+@if (cargo == null)
+{
+    <p><em>Cargando cargo...</em></p>
+}
+else
+{
+    <EditForm Model="cargo" OnValidSubmit="GuardarCambios">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <label>Nombre del Cargo:</label>
+            <InputText class="form-control" @bind-Value="cargo.NombreCargo" />
+            <ValidationMessage For="@(() => cargo.NombreCargo)" />
+        </div>
+
+        <div class="mb-3">
+            <label>Salario Base:</label>
+            <InputNumber class="form-control" @bind-Value="cargo.SalarioBase" />
+            <ValidationMessage For="@(() => cargo.SalarioBase)" />
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-success">Guardar Cambios</button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+
+    private Cargo? cargo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cargo = await Http.GetFromJsonAsync<Cargo>($"api/Cargos/{id}");
+    }
+
+    private async Task GuardarCambios()
+    {
+        if (cargo is null) return;
+
+        var response = await Http.PutAsJsonAsync($"api/Cargos/{cargo.Id}", cargo);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/cargos");
+        }
+        else
+        {
+            // Manejar error (mostrar mensaje, log, etc)
+            Console.WriteLine("Error al guardar cambios.");
+        }
+    }
+
+    private void Cancelar()
+    {
+        Navigation.NavigateTo("/cargos");
+    }
+
+    public class Cargo
+    {
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "El nombre del cargo es obligatorio")]
+        public string NombreCargo { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El salario base es obligatorio")]
+        [Range(0, double.MaxValue, ErrorMessage = "El salario base debe ser positivo")]
+        public decimal SalarioBase { get; set; }
+    }
+}
+

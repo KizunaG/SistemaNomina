@@ -6,6 +6,8 @@ using NominaSystem.Application.DTOs;
 using NominaSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using NominaSystem.Infrastructure.Documents;
+
 
 namespace NominaSystem.Infrastructure.Services
 {
@@ -74,7 +76,7 @@ namespace NominaSystem.Infrastructure.Services
                         foreach (var n in nominas)
                         {
                             table.Cell().Element(Cell).Text(i++.ToString());
-                            table.Cell().Element(Cell).Text(n.ID_Empleado.ToString());
+                            table.Cell().Element(Cell).Text(n.EmpleadoId.ToString());
                             table.Cell().Element(Cell).Text($"{n.PeriodoInicio:dd/MM/yyyy} - {n.PeriodoFin:dd/MM/yyyy}");
                             table.Cell().Element(Cell).Text(n.SalarioBase.ToString("C", CultureInfo.CurrentCulture));
                             table.Cell().Element(Cell).Text(n.Bonificaciones.ToString("C", CultureInfo.CurrentCulture));
@@ -222,5 +224,47 @@ namespace NominaSystem.Infrastructure.Services
         }
 
 
+
+        public async Task<byte[]> GenerarExpedienteEmpleadoPdfAsync(int empleadoId)
+        {
+            var empleado = await _context.Empleados.FindAsync(empleadoId);
+            if (empleado == null)
+                throw new Exception("Empleado no encontrado");
+
+            var documentos = await _context.DocumentosEmpleado
+                .Where(d => d.ID_Empleado == empleadoId)
+                .ToListAsync();
+
+            var historial = await _context.InformacionAcademica
+                .Where(h => h.ID_Empleado == empleadoId)
+                .ToListAsync();
+
+            var doc = new DocumentExpedienteEmpleado(empleado, documentos, historial);
+
+            using var stream = new MemoryStream();
+            doc.GeneratePdf(stream);
+            return stream.ToArray();
+        }
+
+        public async Task<byte[]> GenerarNominaEmpleadoPdfAsync(int nominaId)
+        {
+            var nomina = await _context.Nominas
+              .Include(n => n.Empleado)
+              .ThenInclude(e => e.Cargo)
+              .FirstOrDefaultAsync(n => n.Id == nominaId);
+
+
+            if (nomina == null)
+                return null;
+
+            // Calcular total si no está precargado
+            nomina.TotalPago = (nomina.SalarioBase + nomina.Bonificaciones + nomina.HorasExtras) - nomina.Descuentos;
+
+            var documento = new DocumentoNominaEmpleado(nomina);
+            return documento.Generar();
+        }
+
     }
 }
+
+
