@@ -6,45 +6,54 @@
 @inject IJSRuntime JS
 
 <h3>Editar Nómina</h3>
+
 <EditForm Model="nuevaNomina" OnValidSubmit="ActualizarNomina">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <!-- Mostrar el nombre del empleado, pero no permitir seleccionarlo -->
     <div class="mb-3">
         <label>Empleado:</label>
         <InputText class="form-control" @bind-Value="nuevaNomina.NombreEmpleado" readonly />
-        <ValidationMessage For="@(() => nuevaNomina.NombreEmpleado)" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label>Salario Base:</label>
+        <p class="form-control">@nuevaNomina.SalarioBase.ToString("F2")</p>
     </div>
 
     <div class="mb-3">
         <label>Periodo Inicio:</label>
         <InputDate class="form-control" @bind-Value="nuevaNomina.PeriodoInicio" />
-        <ValidationMessage For="@(() => nuevaNomina.PeriodoInicio)" class="text-danger" />
     </div>
 
     <div class="mb-3">
         <label>Periodo Fin:</label>
         <InputDate class="form-control" @bind-Value="nuevaNomina.PeriodoFin" />
-        <ValidationMessage For="@(() => nuevaNomina.PeriodoFin)" class="text-danger" />
     </div>
 
     <div class="mb-3">
         <label>Horas Extras:</label>
-        <InputNumber class="form-control" @bind-Value="nuevaNomina.HorasExtras" />
-        <ValidationMessage For="@(() => nuevaNomina.HorasExtras)" class="text-danger" />
+        <InputNumber class="form-control" @bind-Value="nuevaNomina.HorasExtras" @oninput="RecalcularIGSSyTotal" />
     </div>
 
     <div class="mb-3">
         <label>Bonificaciones:</label>
-        <InputNumber class="form-control" @bind-Value="nuevaNomina.Bonificaciones" />
-        <ValidationMessage For="@(() => nuevaNomina.Bonificaciones)" class="text-danger" />
+        <InputNumber class="form-control" @bind-Value="nuevaNomina.Bonificaciones" @oninput="RecalcularIGSSyTotal" />
     </div>
 
     <div class="mb-3">
         <label>Descuentos:</label>
-        <InputNumber class="form-control" @bind-Value="nuevaNomina.Descuentos" />
-        <ValidationMessage For="@(() => nuevaNomina.Descuentos)" class="text-danger" />
+        <InputNumber class="form-control" @bind-Value="nuevaNomina.Descuentos" @oninput="RecalcularIGSSyTotal" />
+    </div>
+
+    <div class="mb-3">
+        <label>Descuento IGSS (4.83%):</label>
+        <p class="form-control">@nuevaNomina.IGSS.ToString("F2")</p>
+    </div>
+
+    <div class="mb-3">
+        <label>Total Neto a Pagar:</label>
+        <p class="form-control">@nuevaNomina.TotalPago.ToString("C")</p>
     </div>
 
     <div class="mt-4">
@@ -55,13 +64,10 @@
 
 @code {
     private NominaDto nuevaNomina = new();
-    [Parameter] public string Id { get; set; }  // Cambia el tipo a string
+    [Parameter] public string Id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine($"ID recibido como string: {Id}"); // Verifica el valor de Id recibido
-
-        // Convertimos el string a int antes de usarlo
         if (int.TryParse(Id, out var nominaId))
         {
             try
@@ -72,30 +78,30 @@
                     Http.DefaultRequestHeaders.Authorization =
                         new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-                    // Obtener la nómina a editar
                     var response = await Http.GetAsync($"api/Nomina/{nominaId}");
                     if (response.IsSuccessStatusCode)
                     {
                         nuevaNomina = await response.Content.ReadFromJsonAsync<NominaDto>();
+                        RecalcularIGSSyTotal(); // Cálculo inicial
                     }
                     else
                     {
-                        Console.WriteLine($"Error al obtener la nómina con ID {nominaId}. Código de estado: {response.StatusCode}");
+                        Console.WriteLine($"Error al obtener la nómina con ID {nominaId}. Código: {response.StatusCode}");
                     }
-                }
-                else
-                {
-                    Console.WriteLine("Token no encontrado en LocalStorage");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al cargar la nómina o empleados: {ex.Message}");
+                Console.WriteLine($"Error al cargar la nómina: {ex.Message}");
             }
         }
-        else
+    }
+
+    private void RecalcularIGSSyTotal()
+    {
+        if (nuevaNomina.SalarioBase > 0)
         {
-            Console.WriteLine("El parámetro 'id' no se pudo convertir a entero.");
+            nuevaNomina.IGSS = Math.Round(nuevaNomina.SalarioBase * 0.0483m, 2);
         }
     }
 
@@ -109,7 +115,7 @@
                 Console.WriteLine($"Error al actualizar la nómina: {response.StatusCode}");
                 return;
             }
-            Navigation.NavigateTo("/nominas");  // Redirige a la lista de nóminas
+            Navigation.NavigateTo("/nominas");
         }
         catch (Exception ex)
         {

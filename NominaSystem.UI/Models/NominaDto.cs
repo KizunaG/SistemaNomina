@@ -22,7 +22,8 @@ namespace NominaSystem.UI.Models
         public decimal HorasExtras { get; set; }
         public decimal Bonificaciones { get; set; }
         public decimal Descuentos { get; set; }
-        public decimal TotalPago => SalarioBase + HorasExtras + Bonificaciones - Descuentos;
+        public decimal IGSS { get; set; }
+        public decimal TotalPago => SalarioBase + HorasExtras + Bonificaciones - Descuentos-IGSS;
         public DateTime? FechaPago { get; set; }
 
         // Propiedad calculada para el período

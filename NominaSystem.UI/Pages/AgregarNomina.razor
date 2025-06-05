@@ -14,7 +14,7 @@
     <!-- Selección de Empleado -->
     <div class="mb-3">
         <label>Empleado:</label>
-        <InputSelect class="form-control" @bind-Value="nuevaNomina.ID_Empleado" @onchange="ObtenerSalarioBase">
+        <InputSelect class="form-control" @bind-Value="IdEmpleadoSeleccionado" TValue="int">
             <option value="">-- Seleccione Empleado --</option>
             @foreach (var e in empleados)
             {
@@ -23,7 +23,12 @@
         </InputSelect>
         <ValidationMessage For="@(() => nuevaNomina.ID_Empleado)" class="text-danger" />
     </div>
-       
+
+    <div class="mb-3">
+        <label>Salario Base:</label>
+        <p class="form-control">@nuevaNomina.SalarioBase.ToString("F2")</p>
+    </div>
+
     <div class="mb-3">
         <label>Periodo Inicio:</label>
         <InputDate class="form-control" @bind-Value="nuevaNomina.PeriodoInicio" />
@@ -54,6 +59,16 @@
         <ValidationMessage For="@(() => nuevaNomina.Descuentos)" class="text-danger" />
     </div>
 
+    <div class="mb-3">
+        <label>Descuento IGSS (4.83%):</label>
+        <p class="form-control">@nuevaNomina.IGSS.ToString("F2")</p>
+    </div>
+
+    <div class="mb-3">
+        <label>Total Neto a Pagar:</label>
+        <p class="form-control">@nuevaNomina.TotalPago.ToString("C")</p>
+    </div>
+
     <div class="mt-4">
         <button type="submit" class="btn btn-success">Guardar</button>
         <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
@@ -63,6 +78,19 @@
 @code {
     private NominaDto nuevaNomina = new();
     private List<EmpleadoDto> empleados = new();
+
+    // 🔧 Propiedad para controlar selección del empleado y disparar lógica
+    private int _idEmpleadoSeleccionado;
+    private int IdEmpleadoSeleccionado
+    {
+        get => _idEmpleadoSeleccionado;
+        set
+        {
+            _idEmpleadoSeleccionado = value;
+            nuevaNomina.ID_Empleado = value;
+            _ = ObtenerSalarioBase(); // llamada no esperada explícitamente
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,41 +117,36 @@
 
     private async Task ObtenerSalarioBase()
     {
-        Console.WriteLine("Entró en ObtenerSalarioBase");  // Log de depuración
         if (nuevaNomina.ID_Empleado != 0)
         {
             try
             {
-                // Log para verificar que la solicitud se hace correctamente
-                Console.WriteLine($"Llamando a la API para obtener el salario base del empleado con ID: {nuevaNomina.ID_Empleado}");
-
                 var response = await Http.GetAsync($"api/nomina/empleado/{nuevaNomina.ID_Empleado}/salario");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var salarioBase = await response.Content.ReadFromJsonAsync<decimal>();
 
-                    // Log para verificar que el salario base es recibido
-                    Console.WriteLine($"Salario Base obtenido: {salarioBase}");
+                    Console.WriteLine($"✔ Salario recibido del API: {salarioBase}");
 
-                    // Asigna el salario base a la propiedad correspondiente
                     nuevaNomina.SalarioBase = salarioBase;
+                    nuevaNomina.IGSS = Math.Round(salarioBase * 0.0483m, 2);
 
-                    // Asegúrate de que Blazor actualice la vista
-                    StateHasChanged();  // Esto es importante para forzar la actualización de la vista
+                    Console.WriteLine($"✔ IGSS calculado: {nuevaNomina.IGSS}");
+
+                    await InvokeAsync(StateHasChanged);
                 }
                 else
                 {
-                    Console.WriteLine($"Error al obtener salario base. Código de estado: {response.StatusCode}");
+                    Console.WriteLine($"⚠ Error HTTP al obtener salario base: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al obtener salario base: {ex.Message}");
+                Console.WriteLine($"❌ Excepción al obtener salario base: {ex.Message}");
             }
         }
     }
-
 
     private async Task GuardarNomina()
     {
@@ -148,6 +171,10 @@
         Navigation.NavigateTo("/nominas");
     }
 }
+
+
+
+
 
 
 

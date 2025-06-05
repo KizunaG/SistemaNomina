@@ -258,7 +258,7 @@ namespace NominaSystem.Infrastructure.Services
                 return null;
 
             // Calcular total si no está precargado
-            nomina.TotalPago = (nomina.SalarioBase + nomina.Bonificaciones + nomina.HorasExtras) - nomina.Descuentos;
+            nomina.TotalPago = (nomina.SalarioBase + nomina.Bonificaciones + nomina.HorasExtras) - nomina.Descuentos - nomina.IGSS;
 
             var documento = new DocumentoNominaEmpleado(nomina);
             return documento.Generar();

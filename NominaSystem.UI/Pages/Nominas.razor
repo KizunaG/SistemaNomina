@@ -24,6 +24,7 @@ else
                 <th>Horas Extras</th>
                 <th>Bonificaciones</th>
                 <th>Descuento</th>
+                <th>Descuento IGSS</th>
                 <th>Total Pago</th>
                 <th>Acciones</th>
             </tr>
@@ -38,6 +39,7 @@ else
                     <td>@nom.HorasExtras</td>
                     <td>@nom.Bonificaciones</td>
                     <td>@nom.Descuentos</td>
+                    <td>@nom.IGSS.ToString("F2")</td>
                     <td>@nom.TotalPago.ToString("C")</td>
                     <td>
                         <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarNomina(nom.Id)">Editar</button>
