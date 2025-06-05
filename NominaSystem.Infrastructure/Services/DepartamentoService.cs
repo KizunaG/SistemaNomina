@@ -37,14 +37,24 @@ public class DepartamentoService : IDepartamentoService
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
-        var departamento = await _context.Departamentos.FindAsync(id);
-        if (departamento != null)
+        // Verificar si hay empleados asignados a este departamento
+        bool estaAsignado = await _context.Empleados.AnyAsync(e => e.ID_Departamento == id);
+        if (estaAsignado)
         {
-            _context.Departamentos.Remove(departamento);
-            await _context.SaveChangesAsync();
+            // No se puede eliminar si está en uso
+            return false;
         }
+
+        var departamento = await _context.Departamentos.FindAsync(id);
+        if (departamento == null)
+            return false;
+
+        _context.Departamentos.Remove(departamento);
+        await _context.SaveChangesAsync();
+        return true;
     }
+
 }
 
