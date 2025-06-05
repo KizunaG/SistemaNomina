@@ -7,6 +7,7 @@ using NominaSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using NominaSystem.Infrastructure.Documents;
+using NominaSystem.Domain.Entities;
 
 
 namespace NominaSystem.Infrastructure.Services
@@ -227,9 +228,44 @@ namespace NominaSystem.Infrastructure.Services
 
         public async Task<byte[]> GenerarExpedienteEmpleadoPdfAsync(int empleadoId)
         {
-            var empleado = await _context.Empleados.FindAsync(empleadoId);
-            if (empleado == null)
+            var empleadoDto = await _context.Empleados
+                .Include(e => e.Cargo)
+                .Include(e => e.Departamento)
+                .Where(e => e.Id == empleadoId)
+                .Select(e => new EmpleadoDto
+                {
+                    Id = e.Id,
+                    Nombre = e.Nombre,
+                    Dpi = e.DPI,
+                    Telefono = e.Telefono,
+                    EstadoLaboral = e.EstadoLaboral,
+                    Direccion = e.Direccion,
+                    FechaIngreso = e.FechaIngreso,
+                    Id_Cargo = e.ID_Cargo,
+                    Id_Departamento = e.ID_Departamento,
+                    NombreCargo = e.Cargo != null ? e.Cargo.NombreCargo : "N/A",
+                    NombreDepartamento = e.Departamento != null ? e.Departamento.NombreDepartamento : "N/A"
+                })
+                .FirstOrDefaultAsync();
+
+            if (empleadoDto == null)
                 throw new Exception("Empleado no encontrado");
+
+            // Convertir el DTO a entidad del dominio
+            var empleado = new Empleado
+            {
+                Id = empleadoDto.Id,
+                Nombre = empleadoDto.Nombre,
+                DPI = empleadoDto.Dpi,
+                Telefono = empleadoDto.Telefono,
+                EstadoLaboral = empleadoDto.EstadoLaboral,
+                Direccion = empleadoDto.Direccion,
+                FechaIngreso = empleadoDto.FechaIngreso ?? DateTime.MinValue,
+                ID_Cargo = empleadoDto.Id_Cargo,
+                ID_Departamento = empleadoDto.Id_Departamento,
+                Cargo = new Cargo { NombreCargo = empleadoDto.NombreCargo ?? "N/A" },
+                Departamento = new Departamento { NombreDepartamento = empleadoDto.NombreDepartamento ?? "N/A" }
+            };
 
             var documentos = await _context.DocumentosEmpleado
                 .Where(d => d.ID_Empleado == empleadoId)
@@ -245,6 +281,8 @@ namespace NominaSystem.Infrastructure.Services
             doc.GeneratePdf(stream);
             return stream.ToArray();
         }
+
+
 
         public async Task<byte[]> GenerarNominaEmpleadoPdfAsync(int nominaId)
         {
