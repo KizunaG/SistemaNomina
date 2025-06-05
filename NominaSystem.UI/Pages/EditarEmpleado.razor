@@ -104,14 +104,39 @@ else
                     <div class="accordion-body">
 
                         <div class="mb-3">
+                            <label>Nombre del Documento</label>
+                            <InputText class="form-control" @bind-Value="documento.Nombre" />
+                            <ValidationMessage For="@(() => documento.Nombre)" class="text-danger" />
+                            </div>
+
+                        <div class="mb-3">
                             <label>Tipo Documento:</label>
-                            <InputText class="form-control" @bind-Value="documento.TipoDocumento" />
+                            <InputSelect class="form-control" @bind-Value="documento.TipoDocumento">
+                                <option value="">-- Seleccione Tipo de Documento --</option>
+                                <option value="Contrato Firmado">Contrato Firmado</option>
+                                <option value="Certificado de Estudio">Certificado de Estudio</option>
+                                <option value="DPI">DPI</option>
+                                <option value="Antecendentes Penales/Policiales">Antecendentes Penales/Policiales</option>
+                                <option value="Constancia De Trabajo">Constancia De Trabajo</option>
+                                <option value="Carta De Recomendacion">Carta De Recomendacion</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => documento.TipoDocumento)" class="text-danger" />
                         </div>
 
                         <div class="mb-3">
-                            <label>Ruta del Archivo:</label>
-                            <InputText class="form-control" @bind-Value="documento.RutaArchivo" />
+                            <label>Archivo PDF:</label>
+                            <InputFile OnChange="OnInputFileChange" accept=".pdf" />
+                            @if (!string.IsNullOrEmpty(documento.RutaArchivo))
+                            {
+                                <div class="mt-2 text-success">Archivo cargado: @Path.GetFileName(documento.RutaArchivo)</div>
+                            }
                         </div>
+
+                        <div class="mb-3">
+                            <label>Fecha de Entrega:</label>
+                            <InputDate class="form-control" @bind-Value="documento.FechaEntrega" />
+                        </div>
+
 
                         <div class="mb-3">
                             <label>Fecha de Entrega:</label>
@@ -167,15 +192,14 @@ else
 }
 
 @code {
+    [Inject] IWebHostEnvironment Environment { get; set; } = default!;
     [Parameter] public int id { get; set; }
 
     private Empleado empleado = new();
     private DocumentoDto documento = new();
     private InformacionAcademicaDto academico = new();
-
     private List<Cargo> cargos = new();
     private List<Departamento> departamentos = new();
-
     private bool cargando = true;
 
     protected override async Task OnInitializedAsync()
@@ -198,86 +222,72 @@ else
     {
         try
         {
-            Console.WriteLine("Iniciando GuardarCambios");
-
             var responseEmpleado = await Http.PutAsJsonAsync($"api/Empleados/{empleado.Id}", empleado);
-            if (!responseEmpleado.IsSuccessStatusCode)
-            {
-                Console.WriteLine($"Error al guardar empleado: {responseEmpleado.StatusCode}");
-                // Puedes agregar alerta visual aquí si quieres
-                // Pero no retornamos para permitir navegación y pruebas
-            }
 
-            HttpResponseMessage responseDoc;
             if (documento.Id > 0)
-            {
-                responseDoc = await Http.PutAsJsonAsync($"api/DocumentoEmpleado/{documento.Id}", documento);
-            }
+                await Http.PutAsJsonAsync($"api/DocumentoEmpleado/{documento.Id}", documento);
             else
-            {
-                responseDoc = await Http.PostAsJsonAsync("api/DocumentoEmpleado", documento);
-            }
-            if (!responseDoc.IsSuccessStatusCode)
-            {
-                Console.WriteLine($"Error en documento: {responseDoc.StatusCode}");
-                // Igual que antes, no retornamos aquí
-            }
+                await Http.PostAsJsonAsync("api/DocumentoEmpleado", documento);
 
-            HttpResponseMessage responseAcad;
             if (academico.Id > 0)
-            {
-                responseAcad = await Http.PutAsJsonAsync($"api/InformacionAcademica/{academico.Id}", academico);
-            }
+                await Http.PutAsJsonAsync($"api/InformacionAcademica/{academico.Id}", academico);
             else
-            {
-                responseAcad = await Http.PostAsJsonAsync("api/InformacionAcademica", academico);
-            }
-            if (!responseAcad.IsSuccessStatusCode)
-            {
-                Console.WriteLine($"Error en info académica: {responseAcad.StatusCode}");
-                // Igual que antes, no retornamos aquí
-            }
+                await Http.PostAsJsonAsync("api/InformacionAcademica", academico);
 
-            Console.WriteLine("Datos guardados (o intentados), navegando a /empleados");
             Navigation.NavigateTo("/empleados");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Excepción al guardar cambios: {ex.Message}");
-            // Igual, intentamos navegar para verificar comportamiento
+            Console.WriteLine($"Error al guardar: {ex.Message}");
             Navigation.NavigateTo("/empleados");
         }
     }
 
-
-    private void Cancelar()
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
-        Navigation.NavigateTo("/empleados");
+        try
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                var uploads = Path.Combine(Environment.WebRootPath, "documentos");
+                if (!Directory.Exists(uploads))
+                    Directory.CreateDirectory(uploads);
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{file.Name}";
+                var filePath = Path.Combine(uploads, uniqueFileName);
+
+                await using FileStream fs = new(filePath, FileMode.Create);
+                await file.OpenReadStream().CopyToAsync(fs);
+
+                documento.RutaArchivo = $"documentos/{uniqueFileName}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error al subir archivo: " + ex.Message);
+        }
     }
+
+    private void Cancelar() => Navigation.NavigateTo("/empleados");
 
     public class Empleado
     {
         public int Id { get; set; }
-
-        [Required(ErrorMessage = "El nombre es obligatorio.")]
-        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "El nombre solo puede contener letras y espacios.")]
+        [Required, RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Solo letras y espacios.")]
         public string Nombre { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El DPI es obligatorio.")]
-        [RegularExpression(@"^\d{13}$", ErrorMessage = "El DPI debe contener exactamente 13 números.")]
+        [Required, RegularExpression(@"^\d{13}$", ErrorMessage = "Debe contener 13 dígitos.")]
         public string Dpi { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El teléfono es obligatorio.")]
-        [RegularExpression(@"^\d{8}$", ErrorMessage = "El teléfono debe contener exactamente 8 números.")]
+        [Required, RegularExpression(@"^\d{8}$", ErrorMessage = "Debe contener 8 dígitos.")]
         public string Telefono { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El estado laboral es obligatorio.")]
+        [Required]
         public string EstadoLaboral { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "La dirección es obligatoria.")]
+        [Required]
         public string Direccion { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "La fecha de ingreso es obligatoria.")]
+        [Required]
         public DateTime FechaIngreso { get; set; } = DateTime.Today;
 
         public int? Id_Cargo { get; set; }
@@ -289,6 +299,7 @@ else
         public int Id { get; set; }
         public int ID_Empleado { get; set; }
         public string TipoDocumento { get; set; } = string.Empty;
+        public string? Nombre { get; set; } = string.Empty;
         public string RutaArchivo { get; set; } = string.Empty;
         public DateTime? FechaEntrega { get; set; }
     }
@@ -315,6 +326,7 @@ else
         public string NombreDepartamento { get; set; } = string.Empty;
     }
 }
+
 
 
 

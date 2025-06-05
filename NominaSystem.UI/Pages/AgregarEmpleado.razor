@@ -102,12 +102,26 @@
 
                     <div class="mb-3">
                         <label>Tipo de Documento:</label>
-                        <InputText class="form-control" @bind-Value="nuevoDocumento.TipoDocumento" />
+                        <InputSelect class="form-control" @bind-Value="nuevoDocumento.TipoDocumento">
+                            <option value="">-- Seleccione Tipo de Documento --</option>
+                            <option value="Contrato Firmado">Contrato Firmado</option>
+                            <option value="Certificado de Estudio">Certificado de Estudio</option>
+                            <option value="DPI">DPI</option>
+                            <option value="Antecendentes Penales/Policiales">Antecendentes Penales/Policiales</option>
+                            <option value="Constancia De Trabajo">Constancia De Trabajo</option>
+                            <option value="Carta De Recomendacion">Carta De Recomendacion</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => nuevoDocumento.TipoDocumento)" class="text-danger" />
                     </div>
 
+
                     <div class="mb-3">
-                        <label>Ruta del Archivo:</label>
-                        <InputText class="form-control" @bind-Value="nuevoDocumento.RutaArchivo" />
+                        <label>Archivo PDF:</label>
+                        <InputFile OnChange="OnInputFileChange" accept=".pdf" />
+                        @if (!string.IsNullOrEmpty(nuevoDocumento.RutaArchivo))
+                        {
+                            <div class="mt-2 text-success">Archivo cargado: @Path.GetFileName(nuevoDocumento.RutaArchivo)</div>
+                        }
                     </div>
 
                     <div class="mb-3">
@@ -118,6 +132,7 @@
                 </div>
             </div>
         </div>
+
 
         <!-- Sección: Historial Académico -->
         <div class="accordion-item">
@@ -162,6 +177,8 @@
 </EditForm>
 
 @code {
+    [Inject] IWebHostEnvironment Environment { get; set; } = default!;
+
     private Empleado nuevoEmpleado = new();
     private DocumentoDto nuevoDocumento = new();
     private InformacionAcademicaDto nuevoAcademico = new();
@@ -212,6 +229,33 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Excepción al guardar empleado: {ex.Message}");
+        }
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                var uploads = Path.Combine(Environment.WebRootPath, "documentos");
+                if (!Directory.Exists(uploads))
+                    Directory.CreateDirectory(uploads);
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{file.Name}";
+                var filePath = Path.Combine(uploads, uniqueFileName);
+
+                await using FileStream fs = new(filePath, FileMode.Create);
+                await file.OpenReadStream().CopyToAsync(fs);
+
+                // Ruta relativa que se guarda en la base de datos
+                nuevoDocumento.RutaArchivo = $"documentos/{uniqueFileName}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error al subir archivo: " + ex.Message);
         }
     }
 
@@ -276,6 +320,7 @@
         public string NombreDepartamento { get; set; } = string.Empty;
     }
 }
+
 
 
 

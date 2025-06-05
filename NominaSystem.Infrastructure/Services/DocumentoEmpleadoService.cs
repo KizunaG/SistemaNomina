@@ -28,8 +28,17 @@ public class DocumentoEmpleadoService : IDocumentoEmpleadoService
 
     public async Task UpdateAsync(DocumentoEmpleado documento)
     {
-        _context.DocumentosEmpleado.Update(documento);
-        await _context.SaveChangesAsync();
+        var existente = await _context.DocumentosEmpleado.FindAsync(documento.Id);
+        if (existente != null)
+        {
+            existente.TipoDocumento = documento.TipoDocumento;
+            existente.RutaArchivo = documento.RutaArchivo;
+            existente.FechaEntrega = documento.FechaEntrega;
+            existente.Nombre = documento.Nombre;
+            existente.ID_Empleado = documento.ID_Empleado;
+
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task DeleteAsync(int id)
