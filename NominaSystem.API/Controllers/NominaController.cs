@@ -190,5 +190,17 @@ namespace NominaSystem.API.Controllers
             bool valido = await _service.ValidarAntesProcesarNominaAsync(empleadoId);
             return Ok(new { empleadoId, puedeProcesar = valido });
         }
+
+        [HttpGet("reporte-general")]
+        public async Task<IActionResult> GenerarReporteGeneral()
+        {
+            var nominas = await _service.GetAllNominasAsync();
+
+            var generador = new DocumentoReporteGeneralNominas(nominas);
+            var pdfBytes = generador.Generar();
+
+            return File(pdfBytes, "application/pdf", "ReporteGeneralNominas.pdf");
+        }
+
     }
 }

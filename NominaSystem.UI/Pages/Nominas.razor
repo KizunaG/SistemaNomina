@@ -8,6 +8,8 @@
 <h3>Nóminas</h3>
 
 <button class="btn btn-primary mb-2" @onclick="AgregarNomina">Agregar Nómina</button>
+<button class="btn btn-outline-secondary mb-2" @onclick="DescargarReporte">Descargar Reporte General</button>
+
 
 @if (nominas == null || !nominas.Any())  //Se asegura de mostrar el mensaje adecuado cuando no haya datos
 {
@@ -124,6 +126,19 @@ else
             await JS.InvokeVoidAsync("Swal.fire", "Error", "No se pudo eliminar la nómina", "error");
         }
     }
+
+    private async Task DescargarReporte()
+    {
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var stream = await Http.GetStreamAsync("api/Nomina/reporte-general");
+
+        using var streamRef = new DotNetStreamReference(stream);
+        await JS.InvokeVoidAsync("downloadFileFromStream", "ReporteGeneralNominas.pdf", streamRef);
+    }
+
 
 }
 

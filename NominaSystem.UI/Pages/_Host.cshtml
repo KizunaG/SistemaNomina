@@ -106,6 +106,22 @@
                 showConfirmButton: false
             });
         };
+
+                // Descargar archivo desde Stream (para PDF desde Blazor)
+        window.downloadFileFromStream = async (fileName, contentStreamReference) => {
+            const arrayBuffer = await contentStreamReference.arrayBuffer();
+            const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.download = fileName ?? '';
+            anchor.click();
+
+            anchor.remove();
+            URL.revokeObjectURL(url);
+        };
+
     </script>
 
 </body>
