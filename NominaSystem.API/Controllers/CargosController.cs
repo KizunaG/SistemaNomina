@@ -53,10 +53,22 @@ public class CargosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> DeleteCargo(int id)
     {
-        await _service.DeleteAsync(id);
-        return NoContent();
+        try
+        {
+            bool eliminado = await _service.DeleteAsync(id);
+            if (!eliminado)
+                return NotFound();
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
     }
+
+
 }
 

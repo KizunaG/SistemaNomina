@@ -147,18 +147,22 @@ else
         bool confirmado = await JS.InvokeAsync<bool>("confirmarEliminacionCargo");
         if (!confirmado) return;
 
-
         var response = await Http.DeleteAsync($"api/cargos/{id}");
         if (response.IsSuccessStatusCode)
         {
             await CargarCargos();
             await JS.InvokeVoidAsync("mostrarAlertaExito", "Cargo eliminado correctamente.");
         }
+        else if ((int)response.StatusCode == 400) // Verifica si el backend devolvió BadRequest
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "No permitido", "No se puede eliminar este cargo porque está asignado a uno o más empleados.", "warning");
+        }
         else
         {
             await JS.InvokeVoidAsync("Swal.fire", "Error", "Error al eliminar cargo", "error");
         }
     }
+
 
 
    
