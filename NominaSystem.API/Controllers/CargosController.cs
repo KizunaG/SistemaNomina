@@ -40,9 +40,15 @@ public class CargosController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Cargo cargo)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         await _service.AddAsync(cargo);
         return CreatedAtAction(nameof(GetById), new { id = cargo.Id }, cargo);
     }
+
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] Cargo cargo)

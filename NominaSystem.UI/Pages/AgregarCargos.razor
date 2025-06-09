@@ -2,10 +2,13 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Net.Http.Json
+@using System.Text.Json
 
 <h3>Agregar Cargo</h3>
 
-<EditForm Model="nuevoCargo" OnValidSubmit="GuardarCargo">
+<EditForm EditContext="editContext" OnValidSubmit="GuardarCargo">
     <DataAnnotationsValidator />
 
     <div class="mb-3">
@@ -28,18 +31,61 @@
 
 @code {
     private Cargo nuevoCargo = new();
+    private EditContext? editContext;
+    private ValidationMessageStore? messageStore;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(nuevoCargo);
+        messageStore = new ValidationMessageStore(editContext);
+    }
 
     private async Task GuardarCargo()
     {
+        if (editContext == null || messageStore == null)
+            return;
+
+        messageStore.Clear();
+        editContext.NotifyValidationStateChanged();
+
         var response = await Http.PostAsJsonAsync("api/Cargos", nuevoCargo);
+
         if (response.IsSuccessStatusCode)
         {
             Navigation.NavigateTo("/cargos");
         }
+        else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+
+            try
+            {
+                using var document = JsonDocument.Parse(content);
+
+                if (document.RootElement.TryGetProperty("errors", out var errorsElement))
+                {
+                    foreach (var property in errorsElement.EnumerateObject())
+                    {
+                        var fieldIdentifier = new FieldIdentifier(nuevoCargo, property.Name);
+                        var messages = property.Value.EnumerateArray().Select(e => e.GetString() ?? "").ToArray();
+                        messageStore.Add(fieldIdentifier, messages);
+                    }
+
+                    editContext.NotifyValidationStateChanged();
+                }
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine("⚠️ Error al interpretar respuesta del backend:");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(content);
+            }
+        }
         else
         {
-            // Manejar error, mostrar mensaje, etc.
-            Console.WriteLine("Error al guardar cargo.");
+            var content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"❌ Error inesperado: {response.StatusCode}");
+            Console.WriteLine(content);
         }
     }
 
@@ -56,8 +102,12 @@
         public string NombreCargo { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El salario base es obligatorio")]
-        [Range(0, double.MaxValue, ErrorMessage = "El salario base debe ser positivo")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "El salario base debe ser mayor a 0")]
         public decimal SalarioBase { get; set; }
     }
 }
+
+
+
+
 
