@@ -2,7 +2,7 @@
 
 namespace NominaSystem.UI.Models
 {
-    public class NominaDto
+    public class NominaDto : IValidatableObject
     {
         public int Id { get; set; }
 
@@ -28,5 +28,19 @@ namespace NominaSystem.UI.Models
 
         // Propiedad calculada para el período
         public string Periodo => $"{PeriodoInicio?.ToString("dd/MM/yyyy")} - {PeriodoFin?.ToString("dd/MM/yyyy")}";
+  
+            public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (PeriodoInicio.HasValue && PeriodoFin.HasValue)
+            {
+                if (PeriodoInicio.Value >= PeriodoFin.Value)
+                {
+                    yield return new ValidationResult(
+                        "La fecha de periodo inicio debe ser anterior a la fecha de periodo fin.",
+                        new[] { nameof(PeriodoInicio), nameof(PeriodoFin) });
+                }
+            }
+        }
+
     }
 }

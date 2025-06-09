@@ -9,7 +9,6 @@
 
 <EditForm Model="nuevaNomina" OnValidSubmit="ActualizarNomina">
     <DataAnnotationsValidator />
-    <ValidationSummary />
 
     <div class="mb-3">
         <label>Empleado:</label>
@@ -24,11 +23,13 @@
     <div class="mb-3">
         <label>Periodo Inicio:</label>
         <InputDate class="form-control" @bind-Value="nuevaNomina.PeriodoInicio" />
+        <ValidationMessage For="@(() => nuevaNomina.PeriodoInicio)" class="text-danger" />
     </div>
 
     <div class="mb-3">
         <label>Periodo Fin:</label>
         <InputDate class="form-control" @bind-Value="nuevaNomina.PeriodoFin" />
+        <ValidationMessage For="@(() => nuevaNomina.PeriodoFin)" class="text-danger" />
     </div>
 
     <div class="mb-3">
