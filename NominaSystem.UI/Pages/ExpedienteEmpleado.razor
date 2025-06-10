@@ -95,7 +95,7 @@ else
                 <tr>
                     <th>Nombre</th>
                     <th>Tipo</th>
-                    <th>Ruta</th>
+                    <th>Archivo</th>
                     <th>Fecha de Entrega</th>
                 </tr>
             </thead>
@@ -105,7 +105,17 @@ else
                     <tr>
                         <td>@doc.Nombre</td>
                         <td>@doc.TipoDocumento</td>
-                        <td>@doc.RutaArchivo</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(doc.RutaArchivo))
+                            {
+                                <iframe src="@doc.RutaArchivo" width="100%" height="200px" style="border:1px solid #ccc;"></iframe>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No disponible</span>
+                            }
+                        </td>
+
                         <td>@(doc.FechaEntrega?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                     </tr>
                 }

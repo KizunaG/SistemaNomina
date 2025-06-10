@@ -2,7 +2,6 @@
 using NominaSystem.Application.Interfaces;
 using NominaSystem.Domain.Entities;
 using NominaSystem.Infrastructure.Data;
-using static System.Net.Mime.MediaTypeNames;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -27,12 +26,30 @@ namespace NominaSystem.Infrastructure.Services
 
         public async Task AddAsync(Nomina nomina)
         {
+            // ✅ Calcular IGSS y TotalPago antes de guardar
+            nomina.IGSS = Math.Round(nomina.SalarioBase * 0.0483m, 2);
+            nomina.TotalPago = nomina.SalarioBase
+                               + nomina.HorasExtras
+                               + nomina.Bonificaciones
+                               - nomina.Descuentos
+                               - nomina.IGSS;
+
+            nomina.FechaPago = DateTime.UtcNow;
+
             _context.Nominas.Add(nomina);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Nomina nomina)
         {
+            // ✅ También recalcular IGSS y TotalPago al actualizar
+            nomina.IGSS = Math.Round(nomina.SalarioBase * 0.0483m, 2);
+            nomina.TotalPago = nomina.SalarioBase
+                               + nomina.HorasExtras
+                               + nomina.Bonificaciones
+                               - nomina.Descuentos
+                               - nomina.IGSS;
+
             _context.Nominas.Update(nomina);
             await _context.SaveChangesAsync();
         }
@@ -47,10 +64,16 @@ namespace NominaSystem.Infrastructure.Services
             }
         }
 
-        // Método para procesar nómina automáticamente
+        // ✅ Método para procesar nómina automáticamente (ya estaba bien)
         public async Task<Nomina> ProcesarNominaAsync(Nomina nomina)
         {
-            nomina.TotalPago = nomina.SalarioBase + nomina.HorasExtras + nomina.Bonificaciones - nomina.Descuentos;
+            nomina.IGSS = Math.Round(nomina.SalarioBase * 0.0483m, 2);
+            nomina.TotalPago = nomina.SalarioBase
+                               + nomina.HorasExtras
+                               + nomina.Bonificaciones
+                               - nomina.Descuentos
+                               - nomina.IGSS;
+
             nomina.FechaPago = DateTime.UtcNow;
 
             _context.Nominas.Add(nomina);
@@ -75,7 +98,7 @@ namespace NominaSystem.Infrastructure.Services
                 .All(doc => entregados.Where(e => e != null).Contains(doc));
         }
 
-        // Nuevo método para obtener la lista de nóminas con información para mostrar en lista
+        // ✅ Método corregido para devolver IGSS
         public async Task<List<NominaDto>> GetAllNominasAsync()
         {
             return await _context.Nominas
@@ -90,9 +113,11 @@ namespace NominaSystem.Infrastructure.Services
                     HorasExtras = n.HorasExtras,
                     Bonificaciones = n.Bonificaciones,
                     Descuentos = n.Descuentos,
+                    IGSS = n.IGSS // ✅ Este campo es necesario para que TotalPago se calcule bien en el DTO
+                    // TotalPago no se asigna porque es propiedad calculada en el DTO
                 })
                 .ToListAsync();
         }
-
     }
 }
+

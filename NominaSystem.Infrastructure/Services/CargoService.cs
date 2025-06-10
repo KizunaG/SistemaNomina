@@ -32,15 +32,24 @@ public class CargoService : ICargoService
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var cargo = await _context.Cargos.FindAsync(id);
-        if (cargo != null)
-        {
-            _context.Cargos.Remove(cargo);
-            await _context.SaveChangesAsync();
-        }
+        if (cargo == null)
+            return false;
+
+        // ❌ Validación de asignación
+        var estaAsignado = await _context.Empleados.AnyAsync(e => e.ID_Cargo == id);
+        if (estaAsignado)
+            throw new InvalidOperationException("El cargo está asignado a uno o más empleados.");
+
+        _context.Cargos.Remove(cargo);
+        await _context.SaveChangesAsync();
+
+        return true;
     }
+
+
 
     // Nuevo método para buscar cargos por nombre
     public async Task<List<Cargo>> BuscarPorNombreAsync(string nombre)

@@ -9,5 +9,6 @@ public interface IDepartamentoService
     Task<List<Departamento>> BuscarPorNombreAsync(string nombre);
     Task AddAsync(Departamento departamento);
     Task UpdateAsync(Departamento departamento);
-    Task DeleteAsync(int id);
+    Task<bool> DeleteAsync(int id);
+
 }

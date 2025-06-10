@@ -40,9 +40,15 @@ public class CargosController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Cargo cargo)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         await _service.AddAsync(cargo);
         return CreatedAtAction(nameof(GetById), new { id = cargo.Id }, cargo);
     }
+
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] Cargo cargo)
@@ -53,10 +59,22 @@ public class CargosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> DeleteCargo(int id)
     {
-        await _service.DeleteAsync(id);
-        return NoContent();
+        try
+        {
+            bool eliminado = await _service.DeleteAsync(id);
+            if (!eliminado)
+                return NotFound();
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
     }
+
+
 }
 

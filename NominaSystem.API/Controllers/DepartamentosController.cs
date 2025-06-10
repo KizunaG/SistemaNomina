@@ -54,8 +54,15 @@ public class DepartamentosController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        await _service.DeleteAsync(id);
+        var eliminado = await _service.DeleteAsync(id);
+
+        if (!eliminado)
+        {
+            return BadRequest("No se puede eliminar el departamento porque está asignado a uno o más empleados.");
+        }
+
         return NoContent();
     }
+
 }
 

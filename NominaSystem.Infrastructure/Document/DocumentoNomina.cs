@@ -21,7 +21,8 @@ public class DocumentoNominaEmpleado
             ? _nomina.SalarioBase
             : _nomina.Empleado?.Cargo?.SalarioBase ?? 0;
 
-        var totalPago = (salarioBase + _nomina.Bonificaciones + _nomina.HorasExtras) - _nomina.Descuentos;
+        var igss = _nomina.IGSS;
+        var totalPago = salarioBase + _nomina.Bonificaciones + _nomina.HorasExtras - _nomina.Descuentos - igss;
 
         return Document.Create(container =>
         {
@@ -61,8 +62,8 @@ public class DocumentoNominaEmpleado
                         Row("Horas Extras:", _nomina.HorasExtras.ToString("C"));
                         Row("Bonificaciones:", _nomina.Bonificaciones.ToString("C"));
                         Row("Descuentos:", _nomina.Descuentos.ToString("C"));
+                        Row("Descuento IGSS:", igss.ToString("C"));  // ✅ NUEVA FILA
                         Row("Total a Pagar:", totalPago.ToString("C"));
-
 
                         IContainer CellStyle(IContainer container)
                             => container.BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);

@@ -2,7 +2,8 @@
 @inject NavigationManager Navigation
 
 <div class="page">
-    @if (!Navigation.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase))
+    @if (!(Navigation.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase)
+    || Navigation.Uri.Contains("/registro", StringComparison.OrdinalIgnoreCase)))
     {
         <div class="sidebar">
             <NavMenu />

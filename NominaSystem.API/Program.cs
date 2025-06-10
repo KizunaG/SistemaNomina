@@ -5,6 +5,8 @@ using NominaSystem.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text; // Para Encoding
 using Microsoft.IdentityModel.Tokens; // Para SymmetricSecurityKey y TokenValidationParameters
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
 
 
 

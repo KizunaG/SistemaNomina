@@ -56,4 +56,25 @@ public class DocumentoEmpleadoController : ControllerBase
         return Ok(filtrados);
     }
 
+    [HttpPost("upload")]
+    public async Task<IActionResult> SubirArchivo(IFormFile archivo)
+    {
+        if (archivo == null || archivo.Length == 0)
+            return BadRequest("Archivo no válido.");
+
+        var nombreArchivo = $"{Guid.NewGuid()}_{archivo.FileName}";
+        var rutaCarpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "documentos");
+        Directory.CreateDirectory(rutaCarpeta);
+        var rutaCompleta = Path.Combine(rutaCarpeta, nombreArchivo);
+
+        using (var stream = new FileStream(rutaCompleta, FileMode.Create))
+        {
+            await archivo.CopyToAsync(stream);
+        }
+
+        var rutaRelativa = $"/documentos/{nombreArchivo}";
+        return Ok(new { ruta = rutaRelativa });
+    }
+
+
 }

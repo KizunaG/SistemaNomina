@@ -13,6 +13,7 @@
     <title>NominaSystem</title>
     <base href="~/" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- SweetAlert2 CSS opcional (para estilos personalizados si quieres) -->
 </head>
 <body>
     <app>
@@ -21,8 +22,11 @@
 
     <script src="_framework/blazor.server.js"></script>
 
-    <!-- Bootstrap JS para que funcione el acordeón -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         window.downloadFileFromBytes = (base64, filename) => {
@@ -31,7 +35,96 @@
             link.download = filename;
             link.click();
         };
+
+        // Confirmación para eliminar empleado
+        window.confirmarEliminacionEmpleado = async function (nombreEmpleado) {
+            const result = await Swal.fire({
+                title: 'Eliminar empleado',
+                text: `¿Deseas eliminar al empleado ${nombreEmpleado}? Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+            return result.isConfirmed;
+        };
+
+        // Confirmación para eliminar cargo
+        window.confirmarEliminacionCargo = async function () {
+            const result = await Swal.fire({
+                title: 'Eliminar cargo',
+                text: '¿Estás seguro de que deseas eliminar este cargo?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+            return result.isConfirmed;
+        };
+
+        // Confirmación para eliminar departamento
+        window.confirmarEliminacionDepartamento = async function (id) {
+            const result = await Swal.fire({
+                title: 'Eliminar departamento',
+                text: `¿Deseas eliminar el departamento con ID ${id}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+            return result.isConfirmed;
+        };
+
+        // Confirmación para eliminar nómina
+        window.confirmarEliminacionNomina = async function (id) {
+            const result = await Swal.fire({
+                title: 'Eliminar nómina',
+                text: `¿Deseas eliminar la nómina con ID ${id}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+            return result.isConfirmed;
+        };
+
+        // Mensaje de éxito
+        window.mostrarAlertaExito = function (mensaje) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: mensaje,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        };
+
+                // Descargar archivo desde Stream (para PDF desde Blazor)
+        window.downloadFileFromStream = async (fileName, contentStreamReference) => {
+            const arrayBuffer = await contentStreamReference.arrayBuffer();
+            const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.download = fileName ?? '';
+            anchor.click();
+
+            anchor.remove();
+            URL.revokeObjectURL(url);
+        };
+
     </script>
+
 </body>
 </html>
+
 

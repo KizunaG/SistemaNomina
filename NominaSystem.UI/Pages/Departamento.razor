@@ -64,21 +64,28 @@ else
 
     private async Task EliminarDepartamento(int id)
     {
-        bool confirmado = await JS.InvokeAsync<bool>("confirm", $"¿Desea eliminar el departamento con ID {id}?");
+        bool confirmado = await JS.InvokeAsync<bool>("confirmarEliminacionDepartamento", id);
         if (!confirmado) return;
 
         var response = await Http.DeleteAsync($"api/Departamentos/{id}");
+
         if (response.IsSuccessStatusCode)
         {
             await CargarDepartamentos();
             StateHasChanged();
+            await JS.InvokeVoidAsync("mostrarAlertaExito", "Departamento eliminado correctamente.");
+        }
+        else if ((int)response.StatusCode == 400)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "No permitido", "No se puede eliminar este departamento porque está asignado a uno o más empleados.", "warning");
         }
         else
         {
-            // Manejo de error si deseas
-            Console.WriteLine("Error al eliminar departamento.");
+            await JS.InvokeVoidAsync("Swal.fire", "Error", "Ocurrió un error inesperado al eliminar el departamento.", "error");
         }
     }
+
+
 
     public class DepartamentoDto
     {

@@ -28,22 +28,25 @@ namespace NominaSystem.API.Controllers
         public async Task<List<NominaDto>> GetAllNominasAsync()
         {
             var nominas = await _context.Nominas
-                .Include(n => n.Empleado)  // Asegúrate de incluir Empleado
+                .Include(n => n.Empleado)
                 .Select(n => new NominaDto
                 {
                     Id = n.Id,
-                    NombreEmpleado = n.Empleado != null ? n.Empleado.Nombre : "N/A", // Asegúrate de que se asigna correctamente
+                    NombreEmpleado = n.Empleado != null ? n.Empleado.Nombre : "N/A",
                     PeriodoInicio = n.PeriodoInicio,
                     PeriodoFin = n.PeriodoFin,
-                    SalarioBase = (n.Empleado != null && n.Empleado.Cargo != null) ? n.Empleado.Cargo.SalarioBase : 0, // Asigna el SalarioBase desde el Cargo del Empleado
+                    SalarioBase = n.SalarioBase,        // ✅ Usar el guardado
                     HorasExtras = n.HorasExtras,
                     Bonificaciones = n.Bonificaciones,
                     Descuentos = n.Descuentos,
-
+                    IGSS = n.IGSS                       // ✅ Este campo es clave
+                                                        // TotalPago se calcula automáticamente en el DTO
                 })
                 .ToListAsync();
+
             return nominas;
         }
+
 
 
         [HttpGet("{id}")]
@@ -51,33 +54,29 @@ namespace NominaSystem.API.Controllers
         {
             var nomina = await _context.Nominas
                 .Include(n => n.Empleado)
-                    .ThenInclude(e => e.Cargo) // incluye el Cargo
                 .FirstOrDefaultAsync(n => n.Id == id);
 
             if (nomina == null)
                 return NotFound();
 
-            var salarioBase = nomina.SalarioBase > 0
-                ? nomina.SalarioBase
-                : nomina.Empleado?.Cargo?.SalarioBase ?? 0;
-
-            var totalPago = (salarioBase + nomina.Bonificaciones + nomina.HorasExtras) - nomina.Descuentos;
-
-            var nominaDto = new NominaDto
+            var dto = new NominaDto
             {
                 Id = nomina.Id,
                 ID_Empleado = nomina.EmpleadoId,
                 NombreEmpleado = nomina.Empleado?.Nombre ?? "Empleado no encontrado",
                 PeriodoInicio = nomina.PeriodoInicio,
                 PeriodoFin = nomina.PeriodoFin,
-                SalarioBase = salarioBase,
+                SalarioBase = nomina.SalarioBase,
                 HorasExtras = nomina.HorasExtras,
                 Bonificaciones = nomina.Bonificaciones,
                 Descuentos = nomina.Descuentos,
+                IGSS = nomina.IGSS
+                // TotalPago se calcula automáticamente en el DTO
             };
 
-            return Ok(nominaDto);
+            return Ok(dto);
         }
+
 
 
 
@@ -89,25 +88,24 @@ namespace NominaSystem.API.Controllers
                 return BadRequest("Datos inválidos");
             }
 
-            // Mapeo de NominaDto a la entidad Nomina
+            // ✅ Mapear el DTO a la entidad y calcular IGSS y TotalPago en el servicio
             var nominaCreada = new Nomina
             {
-                EmpleadoId = nuevaNomina.ID_Empleado, // Mapeamos la propiedad del DTO
+                EmpleadoId = nuevaNomina.ID_Empleado,
                 PeriodoInicio = nuevaNomina.PeriodoInicio,
                 PeriodoFin = nuevaNomina.PeriodoFin,
                 SalarioBase = nuevaNomina.SalarioBase,
                 HorasExtras = nuevaNomina.HorasExtras,
                 Bonificaciones = nuevaNomina.Bonificaciones,
-                Descuentos = nuevaNomina.Descuentos,
-                FechaPago = DateTime.Now // Puedes asignar la fecha actual o la que corresponda
+                Descuentos = nuevaNomina.Descuentos
+                // IGSS y TotalPago se calcularán dentro del servicio
             };
 
-            _context.Nominas.Add(nominaCreada);
-            await _context.SaveChangesAsync();
+            await _service.AddAsync(nominaCreada); // ✅ Usar servicio para que calcule y guarde
 
-            // Retorna la URL del recurso recién creado
             return CreatedAtAction(nameof(GetById), new { id = nominaCreada.Id }, nominaCreada);
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] NominaDto nominaDto)
@@ -192,5 +190,17 @@ namespace NominaSystem.API.Controllers
             bool valido = await _service.ValidarAntesProcesarNominaAsync(empleadoId);
             return Ok(new { empleadoId, puedeProcesar = valido });
         }
+
+        [HttpGet("reporte-general")]
+        public async Task<IActionResult> GenerarReporteGeneral()
+        {
+            var nominas = await _service.GetAllNominasAsync();
+
+            var generador = new DocumentoReporteGeneralNominas(nominas);
+            var pdfBytes = generador.Generar();
+
+            return File(pdfBytes, "application/pdf", "ReporteGeneralNominas.pdf");
+        }
+
     }
 }

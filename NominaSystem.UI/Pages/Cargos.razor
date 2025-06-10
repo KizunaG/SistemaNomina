@@ -2,6 +2,10 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@using System.Net.Http.Json
+@using System.Text.Json
 
 <h3>Cargos</h3>
 
@@ -39,7 +43,6 @@ else
     </table>
 }
 
-<!-- Modal para agregar/editar -->
 @if (mostrarModal)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
@@ -50,18 +53,19 @@ else
                     <button type="button" class="btn-close" @onclick="CerrarModal"></button>
                 </div>
                 <div class="modal-body">
-                    <EditForm Model="cargoEdicion" OnValidSubmit="GuardarCargo">
+                    <EditForm EditContext="editContext" OnValidSubmit="GuardarCargo">
                         <DataAnnotationsValidator />
-                        <ValidationSummary />
 
                         <div class="mb-3">
                             <label>Nombre Cargo:</label>
                             <InputText class="form-control" @bind-Value="cargoEdicion.NombreCargo" />
+                            <ValidationMessage For="@(() => cargoEdicion.NombreCargo)" />
                         </div>
 
                         <div class="mb-3">
                             <label>Salario Base:</label>
                             <InputNumber class="form-control" @bind-Value="cargoEdicion.SalarioBase" />
+                            <ValidationMessage For="@(() => cargoEdicion.SalarioBase)" />
                         </div>
 
                         <button type="submit" class="btn btn-success">@((cargoEdicion.Id == 0) ? "Agregar" : "Guardar")</button>
@@ -78,15 +82,13 @@ else
     private bool mostrarModal = false;
     private Cargo cargoEdicion = new();
 
+    private EditContext? editContext;
+    private ValidationMessageStore? messageStore;
+
     protected override async Task OnInitializedAsync()
     {
         await CargarCargos();
     }
-    private void CerrarModal()
-    {
-        mostrarModal = false;
-    }
-
 
     private async Task CargarCargos()
     {
@@ -96,6 +98,8 @@ else
     private void MostrarAgregar()
     {
         cargoEdicion = new Cargo();
+        editContext = new EditContext(cargoEdicion);
+        messageStore = new ValidationMessageStore(editContext);
         mostrarModal = true;
     }
 
@@ -107,62 +111,104 @@ else
                 NombreCargo = cargo.NombreCargo,
                 SalarioBase = cargo.SalarioBase
             };
+        editContext = new EditContext(cargoEdicion);
+        messageStore = new ValidationMessageStore(editContext);
         mostrarModal = true;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
     }
 
     private async Task GuardarCargo()
     {
+        if (editContext == null || messageStore == null)
+            return;
+
+        messageStore.Clear();
+        editContext.NotifyValidationStateChanged();
+
+        HttpResponseMessage response;
+
         if (cargoEdicion.Id == 0)
         {
-            // Agregar nuevo cargo
-            var response = await Http.PostAsJsonAsync("api/cargos", cargoEdicion);
-            if (response.IsSuccessStatusCode)
+            response = await Http.PostAsJsonAsync("api/cargos", cargoEdicion);
+        }
+        else
+        {
+            response = await Http.PutAsJsonAsync($"api/cargos/{cargoEdicion.Id}", cargoEdicion);
+        }
+
+        if (response.IsSuccessStatusCode)
+        {
+            await CargarCargos();
+            mostrarModal = false;
+        }
+        else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+
+            try
             {
-                await CargarCargos();
-                mostrarModal = false;
+                using var doc = JsonDocument.Parse(content);
+                if (doc.RootElement.TryGetProperty("errors", out var errorsElement))
+                {
+                    foreach (var property in errorsElement.EnumerateObject())
+                    {
+                        var field = new FieldIdentifier(cargoEdicion, property.Name);
+                        var messages = property.Value.EnumerateArray().Select(e => e.GetString() ?? "").ToArray();
+                        messageStore.Add(field, messages);
+                    }
+                    editContext.NotifyValidationStateChanged();
+                }
             }
-            else
+            catch (JsonException ex)
             {
-                await JS.InvokeVoidAsync("alert", "Error al agregar cargo");
+                Console.WriteLine("❌ Error al interpretar errores:");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(content);
             }
         }
         else
         {
-            // Actualizar cargo existente
-            var response = await Http.PutAsJsonAsync($"api/cargos/{cargoEdicion.Id}", cargoEdicion);
-            if (response.IsSuccessStatusCode)
-            {
-                await CargarCargos();
-                mostrarModal = false;
-            }
-            else
-            {
-                await JS.InvokeVoidAsync("alert", "Error al actualizar cargo");
-            }
+            var content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("❌ Error inesperado:");
+            Console.WriteLine(content);
         }
     }
 
     private async Task EliminarCargo(int id)
     {
-        bool confirmado = await JS.InvokeAsync<bool>("confirm", "¿Deseas eliminar este cargo?");
+        bool confirmado = await JS.InvokeAsync<bool>("confirmarEliminacionCargo");
         if (!confirmado) return;
 
         var response = await Http.DeleteAsync($"api/cargos/{id}");
         if (response.IsSuccessStatusCode)
         {
             await CargarCargos();
+            await JS.InvokeVoidAsync("mostrarAlertaExito", "Cargo eliminado correctamente.");
+        }
+        else if ((int)response.StatusCode == 400)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "No permitido", "No se puede eliminar este cargo porque está asignado a uno o más empleados.", "warning");
         }
         else
         {
-            await JS.InvokeVoidAsync("alert", "Error al eliminar cargo");
+            await JS.InvokeVoidAsync("Swal.fire", "Error", "Error al eliminar cargo", "error");
         }
     }
 
-   
     public class Cargo
     {
         public int Id { get; set; }
+
+        [Required(ErrorMessage = "El nombre del cargo es obligatorio")]
         public string NombreCargo { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El salario base es obligatorio")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "El salario base debe ser mayor a 0")]
         public decimal SalarioBase { get; set; }
     }
 }
+

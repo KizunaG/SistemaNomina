@@ -54,6 +54,8 @@ public class DocumentExpedienteEmpleado : IDocument
 
 
 
+
+
                     col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
 
                     // Documentos
@@ -82,7 +84,11 @@ public class DocumentExpedienteEmpleado : IDocument
                             {
                                 table.Cell().Text(doc.Nombre ?? "");
                                 table.Cell().Text(doc.TipoDocumento);
-                                table.Cell().Text(doc.RutaArchivo);
+                                var url = $"https://localhost:50745/{doc.RutaArchivo}";
+                                table.Cell().Hyperlink(url).Text("Ver documento PDF").FontColor(Colors.Blue.Medium);
+
+
+
                                 table.Cell().Text(doc.FechaEntrega?.ToString("dd/MM/yyyy") ?? "N/A");
                             }
                         });

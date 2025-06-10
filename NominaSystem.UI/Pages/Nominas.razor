@@ -8,6 +8,8 @@
 <h3>Nóminas</h3>
 
 <button class="btn btn-primary mb-2" @onclick="AgregarNomina">Agregar Nómina</button>
+<button class="btn btn-outline-secondary mb-2" @onclick="DescargarReporte">Descargar Reporte General</button>
+
 
 @if (nominas == null || !nominas.Any())  //Se asegura de mostrar el mensaje adecuado cuando no haya datos
 {
@@ -24,6 +26,7 @@ else
                 <th>Horas Extras</th>
                 <th>Bonificaciones</th>
                 <th>Descuento</th>
+                <th>Descuento IGSS</th>
                 <th>Total Pago</th>
                 <th>Acciones</th>
             </tr>
@@ -38,6 +41,7 @@ else
                     <td>@nom.HorasExtras</td>
                     <td>@nom.Bonificaciones</td>
                     <td>@nom.Descuentos</td>
+                    <td>@nom.IGSS.ToString("F2")</td>
                     <td>@nom.TotalPago.ToString("C")</td>
                     <td>
                         <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarNomina(nom.Id)">Editar</button>
@@ -106,20 +110,36 @@ else
 
     private async Task EliminarNomina(int id)
     {
-        await Task.Delay(100); // Añadir un pequeño retraso para asegurarse de que Blazor esté listo
-        bool confirmar = await JS.InvokeAsync<bool>("confirm", $"¿Deseas eliminar la nómina {id}?");
-        if (!confirmar) return;
+       
+        bool confirmado = await JS.InvokeAsync<bool>("confirmarEliminacionNomina", id);
+        if (!confirmado) return;
+
 
         var response = await Http.DeleteAsync($"api/Nomina/{id}");
         if (response.IsSuccessStatusCode)
         {
-            await CargarNominas();  // Recargar la lista de nóminas después de eliminar
+            await CargarNominas();
+            await JS.InvokeVoidAsync("mostrarAlertaExito", "Nómina eliminada correctamente.");
         }
         else
         {
-            Console.WriteLine($"Error al eliminar nómina: {response.StatusCode}");
+            await JS.InvokeVoidAsync("Swal.fire", "Error", "No se pudo eliminar la nómina", "error");
         }
     }
+
+    private async Task DescargarReporte()
+    {
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        Http.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var stream = await Http.GetStreamAsync("api/Nomina/reporte-general");
+
+        using var streamRef = new DotNetStreamReference(stream);
+        await JS.InvokeVoidAsync("downloadFileFromStream", "ReporteGeneralNominas.pdf", streamRef);
+    }
+
+
 }
 
 
